@@ -19,7 +19,7 @@ if(isset($_POST['email'])) {
     if(!isset($_POST['name']) ||
         !isset($_POST['surname']) ||
         !isset($_POST['email']) ||
-        !isset($_POST['message']){
+        !isset($_POST['message'])){
         died('We are sorry, but there appears to be a problem with the form you submitted.');       
     }
  
