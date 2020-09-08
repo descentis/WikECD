@@ -66,3 +66,19 @@ class wikiRetrieval(object):
                 ParentId = t+t+t+"<ParentId>"+ch_elem.text+"</ParentId>\n" 
                 myFile.write(ParentId)
             '''
+
+            '''
+            Timestamp Information
+            '''
+            if('timestamp' in ch_elem.tag):
+                '''
+                if(f_p!=1):
+                    Instance = Instance+" InstanceType= "+'"'+"wiki/text"+'"'+">\n"
+                    myFile.write(Instance)
+                '''
+                Timestamp = t+t+t+"<TimeStamp>\n"
+                myFile.write(Timestamp)
+                CreationDate = t+t+t+t+"<CreationDate>"+ch_elem.text[:-1]+'.0'+"</CreationDate>\n"
+                myFile.write(CreationDate)
+                Timestamp = t+t+t+"</TimeStamp>\n"
+                myFile.write(Timestamp)            
