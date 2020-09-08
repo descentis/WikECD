@@ -42,3 +42,27 @@ class wikiRetrieval(object):
         else:
             if level and (not elem.tail or not elem.tail.strip()):
                 elem.tail = i    
+
+    def wiki_file_writer(elem,myFile,prefix):
+        global instance_id
+        t = '\t'
+    
+        Instance = t+t+"<Instance "
+        
+      
+        for ch_elem in elem:        
+                        
+            if(('id' in ch_elem.tag) and ('parentid' not in ch_elem.tag)):             
+                Instance = Instance+ "Id="+'"'+str(wikiConverter.instance_id)+'"'+" InstanceType="+'"'+"Revision/Wiki"+'"'+" RevisionId="+ '"'+str(ch_elem.text)+'"'+">\n"
+                myFile.write(Instance)
+                
+                '''
+                RevisionId = t+t+t+"<RevisionId>"+ch_elem.text+"</RevisionId>\n"
+                myFile.write(RevisionId)
+                '''
+            
+            '''
+            if(ch_elem.tag==prefix+'parentid'):
+                ParentId = t+t+t+"<ParentId>"+ch_elem.text+"</ParentId>\n" 
+                myFile.write(ParentId)
+            '''
