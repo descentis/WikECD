@@ -82,3 +82,28 @@ class wikiRetrieval(object):
                 myFile.write(CreationDate)
                 Timestamp = t+t+t+"</TimeStamp>\n"
                 myFile.write(Timestamp)            
+
+            '''
+            Contributors information
+            '''
+            if('contributor' in ch_elem.tag):            
+                Contributors = t+t+t+"<Contributors>\n"
+                myFile.write(Contributors)
+                for contrib in ch_elem:
+                    if('ip' in contrib.tag):
+                        LastEditorUserName = t+t+t+t+"<OwnerUserName>"+html.escape(contrib.text)+"</OwnerUserName>\n"
+                        myFile.write(LastEditorUserName)                        
+                    else:
+                        if('username' in contrib.tag):
+                            try:
+                                LastEditorUserName = t+t+t+t+"<OwnerUserName>"+html.escape(contrib.text)+"</OwnerUserName>\n"
+                            except:
+                                LastEditorUserName = t+t+t+t+"<OwnerUserName>None</OwnerUserName>\n"
+                            myFile.write(LastEditorUserName)                        
+                        if(('id' in contrib.tag) and ('parentid' not in contrib.tag)):
+                            LastEditorUserId = t+t+t+t+"<OwnerUserId>"+contrib.text+"</OwnerUserId>\n"
+                            myFile.write(LastEditorUserId)
+                    
+                        
+                Contributors = t+t+t+"</Contributors>\n"
+                myFile.write(Contributors)
