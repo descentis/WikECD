@@ -107,3 +107,60 @@ class wikiRetrieval(object):
                         
                 Contributors = t+t+t+"</Contributors>\n"
                 myFile.write(Contributors)
+
+
+            '''
+            Body/Text Information
+            '''
+            if('text' in ch_elem.tag):
+                Body = t+t+t+"<Body>\n"
+                myFile.write(Body)
+                if(ch_elem.attrib.get('bytes')!=None):
+                    text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+ch_elem.attrib['bytes']+'">\n'
+                elif(ch_elem.text != None):
+                    text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+str(len(ch_elem.text))+'">\n'
+                else:
+                    text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+str(0)+'">\n'
+                myFile.write(text_field)
+                if(ch_elem.text == None):                
+                    text_body = "";
+                else:
+                   
+                    text_body = textwrap.indent(text=ch_elem.text, prefix=t+t+t+t+t)
+                    text_body = html.escape(text_body)
+                Body_text = text_body+"\n"
+                myFile.write(Body_text)
+                text_field = t+t+t+t+"</Text>\n"
+                myFile.write(text_field)        
+                Body = t+t+t+"</Body>\n"
+                myFile.write(Body)            
+            
+    
+            
+            if('comment' in ch_elem.tag):
+                Edit = t+t+t+"<EditDetails>\n"
+                myFile.write(Edit)
+                if(ch_elem.text == None):                
+                    text_body = "";
+                else:
+                    text_body = textwrap.indent(text=ch_elem.text, prefix=t+t+t+t+t)
+                    text_body = html.escape(text_body)
+                
+                EditType = t+t+t+t+"<EditType>\n"+text_body+"\n"+t+t+t+t+"</EditType>\n"
+                #Body_text = text_body+"\n"
+                myFile.write(EditType)
+                
+                Edit = t+t+t+"</EditDetails>\n"
+                myFile.write(Edit)    
+    
+            if('sha1' in ch_elem.tag):
+                sha = ch_elem.text
+                if(type(sha)!=type(None)):
+                    shaText = t+t+t+'<Knowl key="sha">'+sha+'</Knowl>\n'
+                    myFile.write(shaText)
+                else:
+                    shaText = ''
+                
+        Instance = t+t+"</Instance>\n"
+        myFile.write(Instance)  
+        wikiConverter.instance_id+=1             
