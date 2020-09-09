@@ -164,3 +164,67 @@ class wikiRetrieval(object):
         Instance = t+t+"</Instance>\n"
         myFile.write(Instance)  
         wikiConverter.instance_id+=1             
+
+    def wiki_knolml_converter(name, *args, **kwargs):
+        #global instance_id
+        #Creating a meta file for the wiki article
+        
+        
+        
+        # To get an iterable for wiki file
+
+        file_name = name
+        context_wiki = ET.iterparse(file_name, events=("start","end"))
+        # Turning it into an iterator
+        context_wiki = iter(context_wiki)
+        
+        # getting the root element
+        event_wiki, root_wiki = next(context_wiki)
+        file_name = name[:-4]+'.knolml'
+        file_path = file_name
+        if kwargs.get('output_dir')!=None:
+            file_path = file_path.replace('output','wikipedia_articles')
+        
+        if not os.path.exists(file_path):
+            with open(file_path,"w",encoding='utf-8') as myFile:
+                myFile.write("<?xml version='1.0' encoding='utf-8'?>\n")
+                myFile.write("<KnolML>\n")
+                myFile.write('<Def attr.name="sha" attrib.type="string" for="Instance" id="sha"/>\n')
+               
+            prefix = '{http://www.mediawiki.org/xml/export-0.10/}'    #In case of Wikipedia, prefic is required
+            f = 0
+            title_text = ''
+            try:
+                for event, elem in context_wiki:
+                    
+                    if event == "end" and 'id' in elem.tag:
+                        if(f==0):
+                            with open(file_path,"a",encoding='utf-8') as myFile:
+                                 myFile.write("\t<KnowledgeData "+"Type="+'"'+"Wiki/text/revision"+'"'+" Id="+'"'+elem.text+'"'+">\n")
+                                 
+                            f=1
+                                
+                    if event == "end" and 'title' in elem.tag:
+                        title_text = elem.text
+            
+                    if(f==1 and title_text!=None):            
+                        Title = "\t\t<Title>"+title_text+"</Title>\n"
+                        with open(file_path,"a",encoding='utf-8') as myFile:
+                            myFile.write(Title)
+                        title_text = None
+                    if event == "end" and 'revision' in elem.tag:
+                 
+                        with open(file_path,"a",encoding='utf-8') as myFile:
+                            wikiConverter.wiki_file_writer(elem,myFile,prefix)
+                            
+                            
+                        elem.clear()
+                        root_wiki.clear() 
+            except:
+                print("found problem with the data: "+ file_name)
+        
+            with open(file_path,"a",encoding='utf-8') as myFile:
+                myFile.write("\t</KnowledgeData>\n")
+                myFile.write("</KnolML>\n") 
+        
+            wikiConverter.instance_id = 1
