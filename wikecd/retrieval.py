@@ -260,3 +260,35 @@ class wikiRetrieval(object):
     			i += 1	
     			
     	d = difflib.Differ()
+    	result = list(d.compare(s, s2))
+    
+    	pos = 0
+    	neg = 0
+    
+    	for x in result:
+    		if x[0] == " ":
+    			pos += 1
+    			if neg != 0:
+    				output += "-"+str(neg)+" "
+    				neg = 0
+    		elif x[0] == "-":
+    			neg += 1
+    			if pos != 0:
+    				output += str(pos)+" "
+    				pos = 0	
+    		elif x[0] != "?":
+    			if pos != 0:
+    				output += str(pos)+" "
+    				pos = 0	
+    			if neg != 0:
+    				output += "-"+str(neg)+" "
+    				neg = 0
+    			if wikiConverter.is_number(x[2:]):
+    				output += "'"+x[2:]+"' "
+    			else:			
+    				output += x[2:]+" "
+    	if pos != 0:
+    		output += str(pos)+" "
+    	if neg != 0:
+    		output += "-"+str(neg)+" "
+    	return output.replace("\t\t\t", "")
