@@ -228,3 +228,10 @@ class wikiRetrieval(object):
                 myFile.write("</KnolML>\n") 
         
             wikiConverter.instance_id = 1
+
+    def is_number(self, s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
