@@ -235,3 +235,28 @@ class wikiRetrieval(object):
             return True
         except ValueError:
             return False
+
+    def encode(str1, str2):
+    	output = ""
+    	s = [x.replace("\n", "`").replace("-", "^") for x in str1.split(" ")]
+    
+    	s2 = [x.replace("\n", "`").replace("-", "^") for x in str2.split(" ")]
+    
+    	i = 0
+    	while(True):
+    		if i == len(s):
+    			break;
+    		if s[i].isspace() or s[i] == '':
+    			del s[i]
+    		else:	
+    			i += 1	
+    	i = 0
+    	while(True):
+    		if i == len(s2):
+    			break;
+    		if s2[i].isspace() or s2[i] == '':
+    			del s2[i]
+    		else:	
+    			i += 1	
+    			
+    	d = difflib.Differ()
