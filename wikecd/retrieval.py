@@ -173,7 +173,6 @@ class wikiRetrieval(object):
         
         # To get an iterable for wiki file
         
-        print("inside the knolml_converter")
         file_name = name
         context_wiki = ET.iterparse(file_name, events=("start","end"))
         # Turning it into an iterator
@@ -310,7 +309,7 @@ class wikiRetrieval(object):
         print(length, "revisions found")
     
         count = 0
-        intervalLength =  int((math.log(length)) ** 2);  
+        intervalLength =  int((math.log(length)) ** 2)  
     
         # Keep the Orginal text after every 'm' revisions
         m = intervalLength+1
@@ -354,6 +353,33 @@ class wikiRetrieval(object):
         f2.write("<?xml version='1.0' encoding='utf-8'?>\n"+f_str)
         f2.close()
 
+
+    def serialCompress(self, file_name):
+        context_wiki = ET.iterparse(file_name, events=("start","end"))
+        # Turning it into an iterator
+        context_wiki = iter(context_wiki)
+        
+        # getting the root element
+        event_wiki, root_wiki = next(context_wiki)
+        
+        length = 0
+        last_rev = ""
+        
+        for event, elem in context_wiki:            
+            if event == "end" and 'Instance' in elem.tag: 
+                length += 1
+        
+                
+                elem.clear()
+                root_wiki.clear() 
+                
+        count = 0
+        intervalLength =  int((math.log(length)) ** 2)
+        
+        # Keep the Orginal text after every 'm' revisions
+        m = intervalLength+1
+
+        #print(length)
     def wikiConvert(self, *args, **kwargs):
 
         if(kwargs.get('output_dir')!=None):
