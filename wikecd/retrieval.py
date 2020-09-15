@@ -379,6 +379,27 @@ class wikiRetrieval(object):
         # Keep the Orginal text after every 'm' revisions
         m = intervalLength+1
 
+        for event, elem in context_wiki:            
+            if event == "end" and 'Instance' in elem.tag:
+                for each in elem:
+                    if 'Text' in each.tag:
+                        count += 1
+                        if m != intervalLength+1:
+                            current_str = each.text
+                            each.text = self.encode(prev_str, current_str)
+                            prev_str = current_str
+                            # print("Revision ", count, " written")
+                			
+                            m = m - 1
+                            if m == 0:
+                                m = intervalLength+1
+                        else:
+                            prev_str = each.text
+                            # print("Revision ", count, " written")
+                            m = m - 1
+                            continue
+        
+
         #print(length)
     def wikiConvert(self, *args, **kwargs):
 
