@@ -43,7 +43,7 @@ class wikiRetrieval(object):
             if level and (not elem.tail or not elem.tail.strip()):
                 elem.tail = i    
 
-    def wiki_file_writer(elem,myFile,prefix):
+    def wiki_file_writer(self, elem,myFile,prefix):
         global instance_id
         t = '\t'
     
@@ -163,7 +163,7 @@ class wikiRetrieval(object):
                 
         Instance = t+t+"</Instance>\n"
         myFile.write(Instance)  
-        wikiConverter.instance_id+=1             
+        wikiRetrieval.instance_id+=1             
 
     def wiki_knolml_converter(self, name, *args, **kwargs):
         #global instance_id
@@ -317,7 +317,7 @@ class wikiRetrieval(object):
             count += 1
             if m != intervalLength+1:
                 current_str = each.text
-                each.text = wikiConverter.encode(prev_str, current_str)
+                each.text = wikiRetrieval.encode(prev_str, current_str)
                 prev_str = current_str
                 # print("Revision ", count, " written")
     			
@@ -331,3 +331,24 @@ class wikiRetrieval(object):
                 continue
     
         print("KnolML file created")
+        # Creating directory 
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+    
+        # Changing file path to include directory
+        file_name = file_name.split('/')
+        file_name = directory+'/'+file_name[-1]
+        '''
+        file_name.insert(-1, directory)
+        separator = '/'
+        file_name = separator.join(file_name)
+        '''
+    
+        tree.write(file_name[:-7]+'.knolml')
+        f = open(file_name[:-7]+'.knolml')
+        f_str = f.read()
+        f.close()
+    
+        f2 = open(file_name[:-7]+'.knolml', "w")
+        f2.write("<?xml version='1.0' encoding='utf-8'?>\n"+f_str)
+        f2.close()
