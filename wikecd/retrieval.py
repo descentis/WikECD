@@ -53,7 +53,7 @@ class wikiRetrieval(object):
         for ch_elem in elem:        
                         
             if(('id' in ch_elem.tag) and ('parentid' not in ch_elem.tag)):             
-                Instance = Instance+ "Id="+'"'+str(wikiConverter.instance_id)+'"'+" InstanceType="+'"'+"Revision/Wiki"+'"'+" RevisionId="+ '"'+str(ch_elem.text)+'"'+">\n"
+                Instance = Instance+ "Id="+'"'+str(self.instance_id)+'"'+" InstanceType="+'"'+"Revision/Wiki"+'"'+" RevisionId="+ '"'+str(ch_elem.text)+'"'+">\n"
                 myFile.write(Instance)
                 
                 '''
@@ -163,7 +163,7 @@ class wikiRetrieval(object):
                 
         Instance = t+t+"</Instance>\n"
         myFile.write(Instance)  
-        wikiRetrieval.instance_id+=1             
+        self.instance_id+=1             
 
     def wiki_knolml_converter(self, name, *args, **kwargs):
         #global instance_id
@@ -172,7 +172,8 @@ class wikiRetrieval(object):
         
         
         # To get an iterable for wiki file
-
+        
+        print("inside the knolml_converter")
         file_name = name
         context_wiki = ET.iterparse(file_name, events=("start","end"))
         # Turning it into an iterator
@@ -194,40 +195,40 @@ class wikiRetrieval(object):
             prefix = '{http://www.mediawiki.org/xml/export-0.10/}'    #In case of Wikipedia, prefic is required
             f = 0
             title_text = ''
-            try:
-                for event, elem in context_wiki:
-                    
-                    if event == "end" and 'id' in elem.tag:
-                        if(f==0):
-                            with open(file_path,"a",encoding='utf-8') as myFile:
-                                 myFile.write("\t<KnowledgeData "+"Type="+'"'+"Wiki/text/revision"+'"'+" Id="+'"'+elem.text+'"'+">\n")
-                                 
-                            f=1
-                                
-                    if event == "end" and 'title' in elem.tag:
-                        title_text = elem.text
-            
-                    if(f==1 and title_text!=None):            
-                        Title = "\t\t<Title>"+title_text+"</Title>\n"
+            #try:
+            for event, elem in context_wiki:
+                
+                if event == "end" and 'id' in elem.tag:
+                    if(f==0):
                         with open(file_path,"a",encoding='utf-8') as myFile:
-                            myFile.write(Title)
-                        title_text = None
-                    if event == "end" and 'revision' in elem.tag:
-                 
-                        with open(file_path,"a",encoding='utf-8') as myFile:
-                            wikiConverter.wiki_file_writer(elem,myFile,prefix)
+                             myFile.write("\t<KnowledgeData "+"Type="+'"'+"Wiki/text/revision"+'"'+" Id="+'"'+elem.text+'"'+">\n")
+                             
+                        f=1
                             
-                            
-                        elem.clear()
-                        root_wiki.clear() 
-            except:
-                print("found problem with the data: "+ file_name)
+                if event == "end" and 'title' in elem.tag:
+                    title_text = elem.text
+        
+                if(f==1 and title_text!=None):            
+                    Title = "\t\t<Title>"+title_text+"</Title>\n"
+                    with open(file_path,"a",encoding='utf-8') as myFile:
+                        myFile.write(Title)
+                    title_text = None
+                if event == "end" and 'revision' in elem.tag:
+             
+                    with open(file_path,"a",encoding='utf-8') as myFile:
+                        self.wiki_file_writer(elem,myFile,prefix)
+                        
+                        
+                    elem.clear()
+                    root_wiki.clear() 
+            #except:
+            #    print("found problem with the data: "+ file_name)
         
             with open(file_path,"a",encoding='utf-8') as myFile:
                 myFile.write("\t</KnowledgeData>\n")
                 myFile.write("</KnolML>\n") 
         
-            wikiConverter.instance_id = 1
+            self.instance_id = 1
 
     def is_number(self, s):
         try:
@@ -283,7 +284,7 @@ class wikiRetrieval(object):
     			if neg != 0:
     				output += "-"+str(neg)+" "
     				neg = 0
-    			if wikiConverter.is_number(x[2:]):
+    			if self.is_number(x[2:]):
     				output += "'"+x[2:]+"' "
     			else:			
     				output += x[2:]+" "
@@ -317,7 +318,7 @@ class wikiRetrieval(object):
             count += 1
             if m != intervalLength+1:
                 current_str = each.text
-                each.text = wikiRetrieval.encode(prev_str, current_str)
+                each.text = self.encode(prev_str, current_str)
                 prev_str = current_str
                 # print("Revision ", count, " written")
     			
@@ -352,3 +353,25 @@ class wikiRetrieval(object):
         f2 = open(file_name[:-7]+'.knolml', "w")
         f2.write("<?xml version='1.0' encoding='utf-8'?>\n"+f_str)
         f2.close()
+
+    def wikiConvert(self, *args, **kwargs):
+
+        if(kwargs.get('output_dir')!=None):
+            output_dir = kwargs['output_dir']        
+        if(kwargs.get('file_name')!=None):
+            file_name = kwargs['file_name']
+            self.wiki_knolml_converter(file_name)
+            file_name = file_name[:-4] + '.knolml'
+            self.compress(file_name,output_dir)
+            os.remove(file_name)            
+       
+        if(kwargs.get('file_list')!=None):
+            path_list = kwargs['file_list']
+            for file_name in path_list:            
+                self.wiki_knolml_converter(file_name)
+                file_name = file_name[:-4] + '.knolml'
+                self.compress(file_name,output_dir)
+                os.remove(file_name)
+        
+        if((kwargs.get('file_name')==None) and (kwargs.get('file_list')==None)):
+            print("No arguments provided")
