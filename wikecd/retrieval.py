@@ -165,7 +165,7 @@ class wikiRetrieval(object):
         myFile.write(Instance)  
         wikiConverter.instance_id+=1             
 
-    def wiki_knolml_converter(name, *args, **kwargs):
+    def wiki_knolml_converter(self, name, *args, **kwargs):
         #global instance_id
         #Creating a meta file for the wiki article
         
@@ -236,7 +236,7 @@ class wikiRetrieval(object):
         except ValueError:
             return False
 
-    def encode(str1, str2):
+    def encode(self, str1, str2):
     	output = ""
     	s = [x.replace("\n", "`").replace("-", "^") for x in str1.split(" ")]
     
@@ -292,3 +292,42 @@ class wikiRetrieval(object):
     	if neg != 0:
     		output += "-"+str(neg)+" "
     	return output.replace("\t\t\t", "")
+
+    def compress(self, file_name, directory):
+    	# file_name = input("Enter path of KML file:")
+    
+        tree = ET.parse(file_name)
+        r = tree.getroot()
+        for child in r:
+            if('KnowledgeData' in child.tag):
+                child.attrib['Type'] = 'Wiki/text/revision/compressed'
+                root = child
+                
+        last_rev = ""
+        length = len(root.findall('Instance'))
+    
+        print(length, "revisions found")
+    
+        count = 0
+        intervalLength =  int((math.log(length)) ** 2);  
+    
+        # Keep the Orginal text after every 'm' revisions
+        m = intervalLength+1
+        for each in root.iter('Text'):
+            count += 1
+            if m != intervalLength+1:
+                current_str = each.text
+                each.text = wikiConverter.encode(prev_str, current_str)
+                prev_str = current_str
+                # print("Revision ", count, " written")
+    			
+                m = m - 1
+                if m == 0:
+                    m = intervalLength+1
+            else:
+                prev_str = each.text
+                # print("Revision ", count, " written")
+                m = m - 1
+                continue
+    
+        print("KnolML file created")
