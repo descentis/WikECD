@@ -43,6 +43,71 @@ class wikiRetrieval(object):
             if level and (not elem.tail or not elem.tail.strip()):
                 elem.tail = i    
 
+    def is_number(self, s):
+        try:
+            int(s)
+            return True
+        except ValueError:
+            return False
+
+    def encode(self, str1, str2):
+    	output = ""
+    	s = [x.replace("\n", "`").replace("-", "^") for x in str1.split(" ")]
+    
+    	s2 = [x.replace("\n", "`").replace("-", "^") for x in str2.split(" ")]
+    
+    	i = 0
+    	while(True):
+    		if i == len(s):
+    			break;
+    		if s[i].isspace() or s[i] == '':
+    			del s[i]
+    		else:	
+    			i += 1	
+    	i = 0
+    	while(True):
+    		if i == len(s2):
+    			break;
+    		if s2[i].isspace() or s2[i] == '':
+    			del s2[i]
+    		else:	
+    			i += 1	
+    			
+    	d = difflib.Differ()
+    	result = list(d.compare(s, s2))
+    
+    	pos = 0
+    	neg = 0
+    
+    	for x in result:
+    		if x[0] == " ":
+    			pos += 1
+    			if neg != 0:
+    				output += "-"+str(neg)+" "
+    				neg = 0
+    		elif x[0] == "-":
+    			neg += 1
+    			if pos != 0:
+    				output += str(pos)+" "
+    				pos = 0	
+    		elif x[0] != "?":
+    			if pos != 0:
+    				output += str(pos)+" "
+    				pos = 0	
+    			if neg != 0:
+    				output += "-"+str(neg)+" "
+    				neg = 0
+    			if self.is_number(x[2:]):
+    				output += "'"+x[2:]+"' "
+    			else:			
+    				output += x[2:]+" "
+    	if pos != 0:
+    		output += str(pos)+" "
+    	if neg != 0:
+    		output += "-"+str(neg)+" "
+    	return output.replace("\t\t\t", "")
+
+
     def wiki_file_writer(self, elem,myFile,prefix):
         global instance_id
         t = '\t'
@@ -229,70 +294,6 @@ class wikiRetrieval(object):
         
             self.instance_id = 1
 
-    def is_number(self, s):
-        try:
-            int(s)
-            return True
-        except ValueError:
-            return False
-
-    def encode(self, str1, str2):
-    	output = ""
-    	s = [x.replace("\n", "`").replace("-", "^") for x in str1.split(" ")]
-    
-    	s2 = [x.replace("\n", "`").replace("-", "^") for x in str2.split(" ")]
-    
-    	i = 0
-    	while(True):
-    		if i == len(s):
-    			break;
-    		if s[i].isspace() or s[i] == '':
-    			del s[i]
-    		else:	
-    			i += 1	
-    	i = 0
-    	while(True):
-    		if i == len(s2):
-    			break;
-    		if s2[i].isspace() or s2[i] == '':
-    			del s2[i]
-    		else:	
-    			i += 1	
-    			
-    	d = difflib.Differ()
-    	result = list(d.compare(s, s2))
-    
-    	pos = 0
-    	neg = 0
-    
-    	for x in result:
-    		if x[0] == " ":
-    			pos += 1
-    			if neg != 0:
-    				output += "-"+str(neg)+" "
-    				neg = 0
-    		elif x[0] == "-":
-    			neg += 1
-    			if pos != 0:
-    				output += str(pos)+" "
-    				pos = 0	
-    		elif x[0] != "?":
-    			if pos != 0:
-    				output += str(pos)+" "
-    				pos = 0	
-    			if neg != 0:
-    				output += "-"+str(neg)+" "
-    				neg = 0
-    			if self.is_number(x[2:]):
-    				output += "'"+x[2:]+"' "
-    			else:			
-    				output += x[2:]+" "
-    	if pos != 0:
-    		output += str(pos)+" "
-    	if neg != 0:
-    		output += "-"+str(neg)+" "
-    	return output.replace("\t\t\t", "")
-
     def compress(self, file_name, directory):
     	# file_name = input("Enter path of KML file:")
     
@@ -354,7 +355,7 @@ class wikiRetrieval(object):
         f2.close()
 
 
-    def serialCompress(self, file_name):
+    def serialCompress(self, file_name, *args, **kwargs):
         context_wiki = ET.iterparse(file_name, events=("start","end"))
         # Turning it into an iterator
         context_wiki = iter(context_wiki)
@@ -378,26 +379,7 @@ class wikiRetrieval(object):
         
         # Keep the Orginal text after every 'm' revisions
         m = intervalLength+1
-
-        for event, elem in context_wiki:            
-            if event == "end" and 'Instance' in elem.tag:
-                for each in elem:
-                    if 'Text' in each.tag:
-                        count += 1
-                        if m != intervalLength+1:
-                            current_str = each.text
-                            each.text = self.encode(prev_str, current_str)
-                            prev_str = current_str
-                            # print("Revision ", count, " written")
-                			
-                            m = m - 1
-                            if m == 0:
-                                m = intervalLength+1
-                        else:
-                            prev_str = each.text
-                            # print("Revision ", count, " written")
-                            m = m - 1
-                            continue
+        if not os.path.exists(file_path):
         
 
         #print(length)
