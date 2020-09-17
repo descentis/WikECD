@@ -13,6 +13,7 @@ import numpy as np
 import glob
 import difflib
 import xml.etree.ElementTree as ET
+from diff_match_patch import diff_match_patch
 import math
 import textwrap
 import html
@@ -197,9 +198,14 @@ class wikiRetrieval(object):
                     text_body = "";
                 else:
                     current_str = ch_elem.text
-                    ch_elem.text = self.encode(prev_str, current_str)
+                    if kwargs['compression'].lower() == 'difflib':
+                        ch_elem.text = self.encode(prev_str, current_str)
+                    else:
+                        dmp = diff_match_patch()
+                        p = dmp.patch_make(prev_str,current_str)
+                        ch_elem.text = dmp.patch_toText(p)
                     text_body = textwrap.indent(text=ch_elem.text, prefix=t+t+t+t+t)
-                    text_body = html.escape(text_body)
+                    text_body = html.escape(text_body)                        
                 Body_text = text_body+"\n"
                 myFile.write(Body_text)
                 text_field = t+t+t+t+"</Text>\n"
@@ -238,14 +244,15 @@ class wikiRetrieval(object):
         self.instance_id+=1   
         return current_str          
 
-    def wiki_knolml_converter(self, name, *args, **kwargs):
+    def wiki_knolml_converter(self, *args, **kwargs):
         #global instance_id
         #Creating a meta file for the wiki article
         
         
         
         # To get an iterable for wiki file
-        
+        name = kwargs['name']
+        compression = kwargs['compression_method']
         file_name = name
         context_wiki = ET.iterparse(file_name, events=("start","end"))
         # Turning it into an iterator
@@ -289,7 +296,7 @@ class wikiRetrieval(object):
                 if event == "end" and 'revision' in elem.tag:
                     
                     with open(file_path,"a",encoding='utf-8') as myFile:
-                        prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str)
+                        prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression=compression)
                         
                         
                     elem.clear()
@@ -388,10 +395,14 @@ class wikiRetrieval(object):
     def wikiConvert(self, *args, **kwargs):
 
         if(kwargs.get('output_dir')!=None):
-            output_dir = kwargs['output_dir']        
+            output_dir = kwargs['output_dir']  
+        if kwargs.get('compression_method') != None:
+            compression_method = kwargs['compression_method']
+        else:
+            compression_method = 'diff_match_patch'
         if(kwargs.get('file_name')!=None):
             file_name = kwargs['file_name']
-            self.wiki_knolml_converter(file_name)
+            self.wiki_knolml_converter(name=file_name,compression_method=compression_method)
             file_name = file_name[:-4] + '.knolml'
             #self.compress(file_name,output_dir)
             #os.remove(file_name)            
@@ -399,7 +410,7 @@ class wikiRetrieval(object):
         if(kwargs.get('file_list')!=None):
             path_list = kwargs['file_list']
             for file_name in path_list:            
-                self.wiki_knolml_converter(file_name)
+                self.wiki_knolml_converter(name=file_name,compression_method=compression_method)
                 file_name = file_name[:-4] + '.knolml'
                 self.compress(file_name,output_dir)
                 os.remove(file_name)
