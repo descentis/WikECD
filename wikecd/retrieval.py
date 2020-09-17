@@ -108,7 +108,13 @@ class wikiRetrieval(object):
     	return output.replace("\t\t\t", "")
 
 
-    def wiki_file_writer(self, elem,myFile,prefix):
+    def wiki_file_writer(self, *args, **kwargs):
+        elem = kwargs['elem']
+        myFile = kwargs['myFile']
+        prefix = kwargs['prefix']
+        prev_str = kwargs['prev_str']
+        current_str = ''
+        
         global instance_id
         t = '\t'
     
@@ -190,7 +196,8 @@ class wikiRetrieval(object):
                 if(ch_elem.text == None):                
                     text_body = "";
                 else:
-                   
+                    current_str = ch_elem.text
+                    ch_elem.text = self.encode(prev_str, current_str)
                     text_body = textwrap.indent(text=ch_elem.text, prefix=t+t+t+t+t)
                     text_body = html.escape(text_body)
                 Body_text = text_body+"\n"
@@ -228,7 +235,8 @@ class wikiRetrieval(object):
                 
         Instance = t+t+"</Instance>\n"
         myFile.write(Instance)  
-        self.instance_id+=1             
+        self.instance_id+=1   
+        return current_str          
 
     def wiki_knolml_converter(self, name, *args, **kwargs):
         #global instance_id
@@ -247,6 +255,7 @@ class wikiRetrieval(object):
         event_wiki, root_wiki = next(context_wiki)
         file_name = name[:-4]+'.knolml'
         file_path = file_name
+        prev_str= ''
         if kwargs.get('output_dir')!=None:
             file_path = file_path.replace('output','wikipedia_articles')
         
@@ -278,9 +287,9 @@ class wikiRetrieval(object):
                         myFile.write(Title)
                     title_text = None
                 if event == "end" and 'revision' in elem.tag:
-             
+                    
                     with open(file_path,"a",encoding='utf-8') as myFile:
-                        self.wiki_file_writer(elem,myFile,prefix)
+                        prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str)
                         
                         
                     elem.clear()
@@ -366,20 +375,13 @@ class wikiRetrieval(object):
         length = 0
         last_rev = ""
         
-        for event, elem in context_wiki:            
-            if event == "end" and 'Instance' in elem.tag: 
-                length += 1
-        
-                
-                elem.clear()
-                root_wiki.clear() 
                 
         count = 0
         intervalLength =  int((math.log(length)) ** 2)
         
         # Keep the Orginal text after every 'm' revisions
         m = intervalLength+1
-        if not os.path.exists(file_path):
+
         
 
         #print(length)
@@ -391,8 +393,8 @@ class wikiRetrieval(object):
             file_name = kwargs['file_name']
             self.wiki_knolml_converter(file_name)
             file_name = file_name[:-4] + '.knolml'
-            self.compress(file_name,output_dir)
-            os.remove(file_name)            
+            #self.compress(file_name,output_dir)
+            #os.remove(file_name)            
        
         if(kwargs.get('file_list')!=None):
             path_list = kwargs['file_list']
