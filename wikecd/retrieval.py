@@ -417,3 +417,34 @@ class wikiRetrieval(object):
         
         if((kwargs.get('file_name')==None) and (kwargs.get('file_list')==None)):
             print("No arguments provided")
+
+    def get_article_name(self, article_list):
+        """Finds the correct name of articles present on Wikipedia
+
+        Parameters
+        ----------
+        article_list : list[str] or str
+            List of article names or single article name for which to find the correct name
+
+        """
+        if type(article_list) == list:
+            articles = []
+            for article in article_list:
+                wiki_names = wikipedia.search(article)
+                if article in wiki_names:
+                    articles.append(article)
+                    pass
+                else:
+                    print(
+                        "The same name article: '" + article + "' has not been found. Using the name as: " + wiki_names[
+                            0])
+                    articles.append(wiki_names[0])
+            return articles
+        else:
+            wiki_names = wikipedia.search(article_list)
+            if article_list in wiki_names:
+                return article_list
+            else:
+                print("The same name article: '" + article_list + "' has not been found. Using the name as: " +
+                      wiki_names[0])
+                return wiki_names[0]
