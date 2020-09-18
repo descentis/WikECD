@@ -19,6 +19,7 @@ import textwrap
 import html
 import requests
 import io
+import wikipedia
 
 
 class wikiRetrieval(object):
