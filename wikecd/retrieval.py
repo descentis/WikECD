@@ -448,3 +448,21 @@ class wikiRetrieval(object):
                 print("The same name article: '" + article_list + "' has not been found. Using the name as: " +
                       wiki_names[0])
                 return wiki_names[0]
+
+    def download_from_dump(self, home, articles, key):
+        if not os.path.isdir(home + '/knolml_dataset/phase_details'):
+            download('knolml_dataset', verbose=True, glob_pattern='phase_details.7z', destdir=home)
+            Archive('~/knolml_dataset/phase_details.7z').extractall('~/knolml_dataset')
+        if not os.path.isdir(home + '/knolml_dataset/bz2t'):
+            download('knolml_dataset', verbose=True, glob_pattern='bz2t.7z', destdir=home)
+            Archive('~/knolml_dataset/bz2t.7z').extractall(home + '/knolml_dataset')
+        fileList = glob.glob(home + '/knolml_dataset/phase_details/*.txt')
+        for files in fileList:
+            if 'phase' in files:
+                with open(files, 'r') as myFile:
+                    for line in myFile:
+                        l = line.split('#$*$#')
+                        if l[0] in articles:
+                            print("Found hit for article " + l[0])
+                            # file, art, index, home, key
+                            self.extract_from_bzip(file=l[1], art=l[0], index=int(l[2]), home=home, key=key)
