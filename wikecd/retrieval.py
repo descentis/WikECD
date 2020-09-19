@@ -419,6 +419,48 @@ class wikiRetrieval(object):
         if((kwargs.get('file_name')==None) and (kwargs.get('file_list')==None)):
             print("No arguments provided")
 
+
+    '''
+    Following methods are used to download the relevant dataset from archive in Knol-ML format
+    '''
+
+    def extract_from_bzip(self, *args, **kwargs):
+        # file, art, index, home, key
+        file = kwargs['file']
+        art = kwargs['art']
+        index = kwargs['index']
+        home = kwargs['home']
+        key = kwargs['key']
+        filet = home + "/knolml_dataset/bz2t/" + file + 't'
+        chunk = 1000
+        try:
+            f = SeekableBzip2File(self.dump_directory + '/' + file, filet)
+            f.seek(int(index))
+            strData = f.read(chunk).decode("utf-8")
+            artName = art.replace(" ", "_")
+            artName = artName.replace("/", "__")
+            if not os.path.isdir(home + '/knolml_dataset/output/' + key):
+                os.makedirs(home + '/knolml_dataset/output/' + key)
+            if not os.path.exists(home + '/knolml_dataset/output/' + key + '/' + artName + ".xml"):
+                article = open(home + '/knolml_dataset/output/' + key + '/' + artName + ".xml", 'w+')
+                article.write('<mediawiki>\n')
+                article.write('<page>\n')
+                article.write('\t\t<title>' + art + '</title>\n')
+                # article.write(strData)
+                while '</page>' not in strData:
+                    article.write(strData)
+                    strData = f.read(chunk).decode("utf-8", errors="ignore")
+
+                end = strData.find('</page>')
+                article.write(strData[:end])
+                article.write("\n")
+                article.write('</page>\n')
+                article.write('</mediawiki>')
+            f.close()
+        except:
+            print("please provide the dump information")
+
+
     def get_article_name(self, article_list):
         """Finds the correct name of articles present on Wikipedia
 
