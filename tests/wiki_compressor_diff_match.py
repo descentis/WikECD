@@ -19,7 +19,10 @@ import textwrap
 import html
 import requests
 import time
+import matplotlib.pyplot as plt
+import math  
 import io
+
 
 class wikiConverter(object):
 
@@ -246,6 +249,25 @@ class wikiConverter(object):
             return False
     
     @staticmethod
+    def get_n(file_name):
+     
+        tree = ET.parse(file_name)
+        r = tree.getroot()
+        i=0
+        for revision in r.findall('revision'):
+            revision.find('text').text
+            i=i+1
+
+        length = i    
+        return length
+    
+    @staticmethod
+    def get_k(n):
+        
+        k = int(math.sqrt(n))
+        return k
+    
+    @staticmethod
     def encode(str1, str2):
     	output = ""
     	s = [x.replace("\n", "`").replace("-", "^") for x in str1.split(" ")]
@@ -306,8 +328,10 @@ class wikiConverter(object):
     
     #Main function
     
+    
+
     @staticmethod
-    def compress(file_name, directory):
+    def compress(file_name, k,directory):
     	# file_name = input("Enter path of KML file:")
     
         tree = ET.parse(file_name)
@@ -323,7 +347,7 @@ class wikiConverter(object):
         print(length, "revisions found")
     
         count = 0
-        intervalLength =  int((math.log(length)) ** 2);  
+        intervalLength = k;  
         
         dmp = diff_match_patch()
     
@@ -376,7 +400,7 @@ class wikiConverter(object):
         f2.close()
     
     @staticmethod 
-    def wiki_decompress(file_name,directory):
+    def wiki_decompress(file_name,k,directory):
         tree = ET.parse(file_name)
         r = tree.getroot()
         for child in r:
@@ -390,7 +414,7 @@ class wikiConverter(object):
         print(length, "revisions found")
     
         count = 0
-        intervalLength =  int((math.log(length)) ** 2);  
+        intervalLength =k;  
         
         dmp = diff_match_patch()
     
@@ -454,9 +478,10 @@ class wikiConverter(object):
             output_dir = kwargs['output_dir']        
         if(kwargs.get('file_name')!=None):
             file_name = kwargs['file_name']
+            k= kwargs['k']
             wikiConverter.wiki_knolml_converter(file_name)
             file_name = file_name[:-4] + '.knolml'
-            wikiConverter.compress(file_name,output_dir)
+            wikiConverter.compress(file_name,k,output_dir)
             os.remove(file_name)            
        
         if(kwargs.get('file_list')!=None):
@@ -476,9 +501,26 @@ class wikiConverter(object):
         for i in range(0,len(l),n):
             yield l[i:i+n]
 
-w=wikiConverter()
-start = time.time()
-#w.wiki_decompress('compressed_diff_match/Canberra.knolml','wiki_decompress')
-#w.wikiConvert(file_name='Canberra.xml',output_dir='compressed_diff_match')
-end = time.time()
-print(end-start)
+
+
+def run(filename,w,k,compress_time_list,decompress_time_list):
+    for i in range(len(k)):
+        start = time.time()
+        w.wikiConvert(file_name=filename,output_dir=filename+'compressed'+str(k[i]),k=k[i])
+        end = time.time()
+        compress_time_list.append(end-start)
+
+    for i in range(len(k)):
+        start = time.time()
+        w.wiki_decompress(filename+'compressed'+str(k[i])+'/Canberra.knolml',k[i],filename+'wiki_decompress'+str(k[i]))
+        end = time.time()
+        decompress_time_list.append(end-start)
+
+#w=wikiConverter()
+#n=w.get_n('Canberra.xml')
+#k = [1000,int(math.sqrt(n))]
+#compress_time_list = []
+#decompress_time_list=[]
+#run(w,k)
+
+
