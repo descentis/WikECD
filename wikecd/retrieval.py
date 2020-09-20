@@ -20,6 +20,8 @@ import html
 import requests
 import io
 import wikipedia
+from internetarchive import download
+from pyunpack import Archive
 
 
 class wikiRetrieval(object):
@@ -265,7 +267,8 @@ class wikiRetrieval(object):
         file_path = file_name
         prev_str= ''
         if kwargs.get('output_dir')!=None:
-            file_path = file_path.replace('output','wikipedia_articles')
+            file_name = file_name.split('/')[-1]
+            file_path = kwargs['output_dir']+'/'+file_name
         
         if not os.path.exists(file_path):
             with open(file_path,"w",encoding='utf-8') as myFile:
@@ -403,8 +406,8 @@ class wikiRetrieval(object):
             compression_method = 'diff_match_patch'
         if(kwargs.get('file_name')!=None):
             file_name = kwargs['file_name']
-            self.wiki_knolml_converter(name=file_name,compression_method=compression_method)
-            file_name = file_name[:-4] + '.knolml'
+            self.wiki_knolml_converter(name=file_name,compression_method=compression_method, output_dir=output_dir)
+            #file_name = file_name[:-4] + '.knolml'
             #self.compress(file_name,output_dir)
             #os.remove(file_name)            
        
@@ -420,10 +423,12 @@ class wikiRetrieval(object):
             print("No arguments provided")
 
 
+
     '''
     Following methods are used to download the relevant dataset from archive in Knol-ML format
     '''
 
+    '''
     def extract_from_bzip(self, *args, **kwargs):
         # file, art, index, home, key
         file = kwargs['file']
@@ -509,3 +514,4 @@ class wikiRetrieval(object):
                             print("Found hit for article " + l[0])
                             # file, art, index, home, key
                             self.extract_from_bzip(file=l[1], art=l[0], index=int(l[2]), home=home, key=key)
+    '''
