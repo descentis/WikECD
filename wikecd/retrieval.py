@@ -203,10 +203,11 @@ class wikiRetrieval(object):
                     current_str = ch_elem.text
                     if kwargs['compression'].lower() == 'difflib':
                         ch_elem.text = self.encode(prev_str, current_str)
-                    else:
+                    elif kwargs['compression'].lower() == 'diff_match':
                         dmp = diff_match_patch()
                         p = dmp.patch_make(prev_str,current_str)
                         ch_elem.text = dmp.patch_toText(p)
+                        
                     text_body = textwrap.indent(text=ch_elem.text, prefix=t+t+t+t+t)
                     text_body = html.escape(text_body)                        
                 Body_text = text_body+"\n"
@@ -256,6 +257,7 @@ class wikiRetrieval(object):
         # To get an iterable for wiki file
         name = kwargs['name']
         compression = kwargs['compression_method']
+        intervalLength = kwargs['interval_length']
         file_name = name
         context_wiki = ET.iterparse(file_name, events=("start","end"))
         # Turning it into an iterator
@@ -280,6 +282,8 @@ class wikiRetrieval(object):
             f = 0
             title_text = ''
             #try:
+            count = 0
+            m = intervalLength+1
             for event, elem in context_wiki:
                 
                 if event == "end" and 'id' in elem.tag:
@@ -299,9 +303,20 @@ class wikiRetrieval(object):
                     title_text = None
                 if event == "end" and 'revision' in elem.tag:
                     
-                    with open(file_path,"a",encoding='utf-8') as myFile:
-                        prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression=compression)
-                        
+                    count+=1
+                    if m != intervalLength+1:
+                        with open(file_path,"a",encoding='utf-8') as myFile:
+                            prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression=compression)
+                        # print("Revision ", count, " written")
+            			
+                        m = m - 1
+                        if m == 0:
+                            m = intervalLength+1
+                    
+                    else:
+                        with open(file_path,"a",encoding='utf-8') as myFile:
+                            prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression='none')
+                        m = m-1
                         
                     elem.clear()
                     root_wiki.clear() 
@@ -403,10 +418,33 @@ class wikiRetrieval(object):
         if kwargs.get('compression_method') != None:
             compression_method = kwargs['compression_method']
         else:
-            compression_method = 'diff_match_patch'
+            compression_method = 'diff_match'
         if(kwargs.get('file_name')!=None):
             file_name = kwargs['file_name']
-            self.wiki_knolml_converter(name=file_name,compression_method=compression_method, output_dir=output_dir)
+            context_wiki = ET.iterparse(file_name, events=("start","end"))
+            # Turning it into an iterator
+            context_wiki = iter(context_wiki)
+            
+            # getting the root element
+            event_wiki, root_wiki = next(context_wiki)
+            
+            length = 0
+            for event, elem in context_wiki:
+                if event == "end" and 'revision' in elem.tag:
+                    length+=1
+            
+            if kwargs.get('k') != None:
+                if kwargs['k'] == 1:
+                    intervalLength = 1
+                if kwargs['k'] == 'rootn':
+                    intervalLength = int(length**(1/2))
+                if kwargs['k'] == 'thousand':
+                    intervalLength = 1000
+                if kwargs['k'] == 'n':
+                    intervalLength = length-2                
+                
+            
+            self.wiki_knolml_converter(name=file_name,compression_method=compression_method, output_dir=output_dir,interval_length=intervalLength)
             #file_name = file_name[:-4] + '.knolml'
             #self.compress(file_name,output_dir)
             #os.remove(file_name)            
