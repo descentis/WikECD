@@ -331,7 +331,7 @@ class wikiConverter(object):
     
 
     @staticmethod
-    def compress(file_name, k,directory):
+    def compress(file_name, k,directory,compress_time_list):
     	# file_name = input("Enter path of KML file:")
     
         tree = ET.parse(file_name)
@@ -354,11 +354,12 @@ class wikiConverter(object):
         # Keep the Orginal text after every 'm' revisions
         m = intervalLength+1
         g=0
+        start = time.time()
         for each in root.iter('Text'):
             g=g+1
-            print(g)
             count += 1
             if m != intervalLength+1:
+                print('diff',g)
                 current_str = each.text
                 #each.text = wikiConverter.encode(prev_str, current_str)
                 p = dmp.patch_make(prev_str,current_str)
@@ -370,11 +371,13 @@ class wikiConverter(object):
                 if m == 0:
                     m = intervalLength+1
             else:
+                print(g)
                 prev_str = each.text
                 # print("Revision ", count, " written")
                 m = m - 1
                 continue
-    
+        end = time.time()
+        compress_time_list.append(end-start)
         print("KnolML file created")
     	
         # Creating directory 
@@ -399,8 +402,58 @@ class wikiConverter(object):
         f2.write("<?xml version='1.0' encoding='utf-8'?>\n"+f_str)
         f2.close()
     
+
+    @staticmethod
+    def get_revision(revision,k,file_name):
+        tree = ET.parse(file_name)
+        r = tree.getroot()
+        for child in r:
+            if('KnowledgeData' in child.tag):
+                child.attrib['Type'] = 'Wiki/text/revision/compressed'
+                root = child
+                
+        last_rev = ""
+        length = len(root.findall('Instance'))
+        intervalLength =k;  
+        # Keep the Orginal text after every 'm' revisions
+        m = intervalLength+1
+        dmp = diff_match_patch()
+
+        #offset and factor
+        rev = revision
+        #print(rev)
+
+        factor_length = (rev//m)*m
+        offset = rev-factor_length
+        count = 0
+        reference_revision=''
+        for each in root.iter('Text'):
+            if count == factor_length:
+                reference_revision = each.text
+                if offset == 0:
+                    return reference_revision
+
+            if count>factor_length:
+                
+                if offset==0:
+                    return reference_revision
+                
+                current_str = each.text
+                patches = dmp.patch_fromText(current_str)
+                temp, _ = dmp.patch_apply(patches, reference_revision)
+                reference_revision = temp
+                offset = offset-1
+            
+            
+            count = count+1
+
+
+
+
+
+
     @staticmethod 
-    def wiki_decompress(file_name,k,directory):
+    def wiki_decompress(file_name,k,directory,decompress_time_list):
         tree = ET.parse(file_name)
         r = tree.getroot()
         for child in r:
@@ -421,6 +474,7 @@ class wikiConverter(object):
         # Keep the Orginal text after every 'm' revisions
         m = intervalLength+1
         g=0
+        start = time.time()
         for each in root.iter('Text'):
             g=g+1
             print(g)
@@ -447,7 +501,8 @@ class wikiConverter(object):
                 # print("Revision ", count, " written")
                 m = m - 1
                 continue
-    
+        end = time.time()
+        decompress_time_list.append(end-start)
         print("KnolML file created")
     	
         # Creating directory 
@@ -481,7 +536,7 @@ class wikiConverter(object):
             k= kwargs['k']
             wikiConverter.wiki_knolml_converter(file_name)
             file_name = file_name[:-4] + '.knolml'
-            wikiConverter.compress(file_name,k,output_dir)
+            wikiConverter.compress(file_name,k,output_dir,compress_time_list)
             os.remove(file_name)            
        
         if(kwargs.get('file_list')!=None):
@@ -511,16 +566,6 @@ def run(filename,w,k,compress_time_list,decompress_time_list):
         compress_time_list.append(end-start)
 
     for i in range(len(k)):
-        start = time.time()
-        w.wiki_decompress(filename+'compressed'+str(k[i])+'/Canberra.knolml',k[i],filename+'wiki_decompress'+str(k[i]))
-        end = time.time()
-        decompress_time_list.append(end-start)
-
-#w=wikiConverter()
-#n=w.get_n('Canberra.xml')
-#k = [1000,int(math.sqrt(n))]
-#compress_time_list = []
-#decompress_time_list=[]
-#run(w,k)
-
-
+        w.wiki_decompress(filename+'compressed'+str(k[i])+'/Canberra.knolml',k[i],filename+'wiki_decompress'+str(k[i]),decompress_time_list)
+    
+        
