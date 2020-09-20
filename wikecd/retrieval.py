@@ -22,6 +22,7 @@ import io
 import wikipedia
 from internetarchive import download
 from pyunpack import Archive
+import time
 
 
 class wikiRetrieval(object):
@@ -432,7 +433,9 @@ class wikiRetrieval(object):
             for event, elem in context_wiki:
                 if event == "end" and 'revision' in elem.tag:
                     length+=1
-            
+
+                    elem.clear()
+                    root_wiki.clear() 
             if kwargs.get('k') != None:
                 if kwargs['k'] == 1:
                     intervalLength = 1
@@ -553,3 +556,21 @@ class wikiRetrieval(object):
                             # file, art, index, home, key
                             self.extract_from_bzip(file=l[1], art=l[0], index=int(l[2]), home=home, key=key)
     '''
+
+article_list = ['George_W._Bush.xml', 'Donald_Trump.xml', 'List_of_WWE_personnel.xml', 'United_States.xml']
+
+path_name = '/home/descentis/knolml_dataset/output/article_list/'
+
+w = wikiRetrieval()
+
+t1 = time.time()
+for each in article_list:
+    file_name = path_name+each
+    w.wikiConvert(file_name=file_name, output_dir='/home/descentis/research/working_datasets/wikced/k_one', k=1)
+    w.wikiConvert(file_name=file_name, output_dir='/home/descentis/research/working_datasets/wikced/k_root_n', k='rootn')
+    w.wikiConvert(file_name=file_name, output_dir='/home/descentis/research/working_datasets/wikced/k_thousand', k='thousand')
+    w.wikiConvert(file_name=file_name, output_dir='/home/descentis/research/working_datasets/wikced/k_n', k='n')
+
+t2 = time.time()
+
+print(t2-t1)
