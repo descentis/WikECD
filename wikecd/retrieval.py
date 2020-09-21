@@ -464,6 +464,25 @@ class wikiRetrieval(object):
             print("No arguments provided")
 
 
+    def instance_retreival(file_name, *args, **kwargs):
+        # method to retrieve the revisions from the compressed format
+        if kwargs.get('interval_length') != None:
+            interval_length = kwargs['interval_length']
+        else:
+            interval_length = 'rootn'
+        tree = ET.parse(file_name)
+        r = tree.getroot()
+        revisionsDict = {}
+
+        for child in r:
+            if ('KnowledgeData' in child.tag):
+                root = child
+        length = len(root.findall('Instance'))
+        for each in root.iter('Instance'):
+            instanceId = int(each.attrib['Id'])
+            for child in each:
+                if 'Body' in child.tag:
+                    revisionsDict[instanceId] = child[0].text
 
     '''
     Following methods are used to download the relevant dataset from archive in Knol-ML format
