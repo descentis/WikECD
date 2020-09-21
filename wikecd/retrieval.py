@@ -474,6 +474,7 @@ class wikiRetrieval(object):
         #m = int((math.log(length)) ** 2) + 1
         if n % m != 0:
             interval = n - (n % m) + 1
+            print('interval', interval)
             n = n - interval + 1
         else:
             interval = n - (m - 1)
@@ -484,8 +485,9 @@ class wikiRetrieval(object):
         prev_str = revisionsDict[count]
         result = prev_str
         while count < original:
+            #print("yes")
             count += 1
-            print("yes")
+            print(revisionsDict[count])
             current_str = revisionsDict[count]
             patches = dmp.patch_fromText(current_str)
             result, _ = dmp.patch_apply(patches, prev_str)
@@ -518,7 +520,9 @@ class wikiRetrieval(object):
                     revisionsDict[instanceId] = child[0].text
         
         if interval_length == 'rootn':
-            intervalLength = int((length)**(1/2))
+            intervalLength = int((length)**(1/2)) + 1
+            print('length', length)
+            print('intervalLength', intervalLength)
             t1 = time.time()
             result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
             t2 = time.time()
@@ -634,3 +638,4 @@ t2 = time.time()
 
 print(t2-t1)
 '''
+
