@@ -463,13 +463,46 @@ class wikiRetrieval(object):
         if((kwargs.get('file_name')==None) and (kwargs.get('file_list')==None)):
             print("No arguments provided")
 
+    
+    def __extract_instance(self, *args, **kwargs):
+        
+        revisionsDict = kwargs['revisionDict']
+        m = kwargs['intervalLength']
+        n = kwargs['instance_num']
+        returnResult = []
+        original = n
+        #m = int((math.log(length)) ** 2) + 1
+        if n % m != 0:
+            interval = n - (n % m) + 1
+            n = n - interval + 1
+        else:
+            interval = n - (m - 1)
+            n = n - interval + 1
 
-    def instance_retreival(file_name, *args, **kwargs):
+        dmp = diff_match_patch()
+        count = interval
+        prev_str = revisionsDict[count]
+        result = prev_str
+        while count < original:
+            count += 1
+            print("yes")
+            current_str = revisionsDict[count]
+            patches = dmp.patch_fromText(current_str)
+            result, _ = dmp.patch_apply(patches, prev_str)
+            
+            prev_str = result
+        
+        return result
+
+    def instance_retreival(self, file_name, *args, **kwargs):
         # method to retrieve the revisions from the compressed format
         if kwargs.get('interval_length') != None:
             interval_length = kwargs['interval_length']
         else:
             interval_length = 'rootn'
+        
+        if kwargs.get('instance_num') != None:
+            n = kwargs['instance_num']
         tree = ET.parse(file_name)
         r = tree.getroot()
         revisionsDict = {}
@@ -483,6 +516,13 @@ class wikiRetrieval(object):
             for child in each:
                 if 'Body' in child.tag:
                     revisionsDict[instanceId] = child[0].text
+        
+        if interval_length == 'rootn':
+            intervalLength = int((length)**(1/2))
+            t1 = time.time()
+            result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
+            t2 = time.time()
+            print(t2-t1)
 
     '''
     Following methods are used to download the relevant dataset from archive in Knol-ML format
@@ -575,7 +615,7 @@ class wikiRetrieval(object):
                             # file, art, index, home, key
                             self.extract_from_bzip(file=l[1], art=l[0], index=int(l[2]), home=home, key=key)
     '''
-
+'''
 article_list = ['George_W._Bush.xml', 'Donald_Trump.xml', 'List_of_WWE_personnel.xml', 'United_States.xml']
 
 path_name = '/home/descentis/knolml_dataset/output/article_list/'
@@ -593,3 +633,4 @@ for each in article_list:
 t2 = time.time()
 
 print(t2-t1)
+'''
