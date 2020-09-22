@@ -192,11 +192,11 @@ class wikiRetrieval(object):
                 Body = t+t+t+"<Body>\n"
                 myFile.write(Body)
                 if(ch_elem.attrib.get('bytes')!=None):
-                    text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+ch_elem.attrib['bytes']+'">\n'
+                    text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+ch_elem.attrib['bytes']+'">'
                 elif(ch_elem.text != None):
-                    text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+str(len(ch_elem.text))+'">\n'
+                    text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+str(len(ch_elem.text))+'">'
                 else:
-                    text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+str(0)+'">\n'
+                    text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+str(0)+'">'
                 myFile.write(text_field)
                 if(ch_elem.text == None):                
                     text_body = "";
@@ -208,12 +208,13 @@ class wikiRetrieval(object):
                         dmp = diff_match_patch()
                         p = dmp.patch_make(prev_str,current_str)
                         ch_elem.text = dmp.patch_toText(p)
-                        
-                    text_body = textwrap.indent(text=ch_elem.text, prefix=t+t+t+t+t)
-                    text_body = html.escape(text_body)                        
+                    
+                    text_body = html.escape(ch_elem.text)    
+                    #text_body = textwrap.indent(text=ch_elem.text, prefix=t+t+t+t+t)
+                    #text_body = html.escape(text_body)                        
                 Body_text = text_body+"\n"
                 myFile.write(Body_text)
-                text_field = t+t+t+t+"</Text>\n"
+                text_field = "</Text>\n"
                 myFile.write(text_field)        
                 Body = t+t+t+"</Body>\n"
                 myFile.write(Body)            
@@ -444,7 +445,7 @@ class wikiRetrieval(object):
                 if kwargs['k'] == 'thousand':
                     intervalLength = 1000
                 if kwargs['k'] == 'n':
-                    intervalLength = length-2                
+                    intervalLength = length-1                
                 
             
             self.wiki_knolml_converter(name=file_name,compression_method=compression_method, output_dir=output_dir,interval_length=intervalLength)
@@ -474,7 +475,7 @@ class wikiRetrieval(object):
         #m = int((math.log(length)) ** 2) + 1
         if n % m != 0:
             interval = n - (n % m) + 1
-            print('interval', interval)
+            #print('interval', interval)
             n = n - interval + 1
         else:
             interval = n - (m - 1)
@@ -487,7 +488,7 @@ class wikiRetrieval(object):
         while count < original:
             #print("yes")
             count += 1
-            print(revisionsDict[count])
+            #print(repr(revisionsDict[count]))
             current_str = revisionsDict[count]
             patches = dmp.patch_fromText(current_str)
             result, _ = dmp.patch_apply(patches, prev_str)
@@ -521,12 +522,13 @@ class wikiRetrieval(object):
         
         if interval_length == 'rootn':
             intervalLength = int((length)**(1/2)) + 1
-            print('length', length)
-            print('intervalLength', intervalLength)
+            #print('length', length)
+            #print('intervalLength', intervalLength)
             t1 = time.time()
             result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
             t2 = time.time()
             print(t2-t1)
+            print(result)
 
     '''
     Following methods are used to download the relevant dataset from archive in Knol-ML format
@@ -619,7 +621,7 @@ class wikiRetrieval(object):
                             # file, art, index, home, key
                             self.extract_from_bzip(file=l[1], art=l[0], index=int(l[2]), home=home, key=key)
     '''
-'''
+
 article_list = ['George_W._Bush.xml', 'Donald_Trump.xml', 'List_of_WWE_personnel.xml', 'United_States.xml']
 
 path_name = '/home/descentis/knolml_dataset/output/article_list/'
@@ -635,7 +637,5 @@ for each in article_list:
     w.wikiConvert(file_name=file_name, output_dir='/home/descentis/research/working_datasets/wikced/k_n', k='n')
 
 t2 = time.time()
-
 print(t2-t1)
-'''
 
