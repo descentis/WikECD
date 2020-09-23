@@ -521,15 +521,40 @@ class wikiRetrieval(object):
                     revisionsDict[instanceId] = child[0].text
         
         if interval_length == 'rootn':
-            intervalLength = int((length)**(1/2)) + 1
+            intervalLength = int((length)**(1/2))
             #print('length', length)
             #print('intervalLength', intervalLength)
             t1 = time.time()
             result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
             t2 = time.time()
             print(t2-t1)
-            print(result)
+        
+        if interval_length == 'thousand':
+            intervalLength = 1000
+            #print('length', length)
+            #print('intervalLength', intervalLength)
+            t1 = time.time()
+            result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
+            t2 = time.time()
+            print(t2-t1)
+            
+        if interval_length == 'n':
+            intervalLength = length - 1
+            #print('length', length)
+            #print('intervalLength', intervalLength)
+            t1 = time.time()
+            result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
+            t2 = time.time()
+            print(t2-t1)
 
+        if interval_length == 'one':
+            intervalLength = 1
+            #print('length', length)
+            #print('intervalLength', intervalLength)
+            t1 = time.time()
+            result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
+            t2 = time.time()
+            print(t2-t1)
     '''
     Following methods are used to download the relevant dataset from archive in Knol-ML format
     '''
@@ -622,6 +647,7 @@ class wikiRetrieval(object):
                             self.extract_from_bzip(file=l[1], art=l[0], index=int(l[2]), home=home, key=key)
     '''
 
+'''
 article_list = ['George_W._Bush.xml', 'Donald_Trump.xml', 'List_of_WWE_personnel.xml', 'United_States.xml']
 
 path_name = '/home/descentis/knolml_dataset/output/article_list/'
@@ -638,4 +664,55 @@ for each in article_list:
 
 t2 = time.time()
 print(t2-t1)
+'''
+
+w = wikiRetrieval()
+
+article_list = ['George_W._Bush.knolml', 'Donald_Trump.knolml', 'List_of_WWE_personnel.knolml', 'United_States.knolml']
+
+path_name = '/home/descentis/knolml_dataset/output/article_list/'
+
+from random import randint
+from statistics import mean 
+time_dict = {}
+for each in article_list:
+    file_name = path_name+each
+    '''
+    time1 = []
+    for i in range(100):
+        t1 = time.time()
+        x = randint(100, 3000)
+        w.wikiConvert(file_name='/home/descentis/research/working_datasets/wikced/k_one/'+each, interval_length='one', instance_num=x)
+        t2 = time.time()
+        time1.append(t2-t1)
+    time_dict['k_one'] = mean(time1)
+    '''
+
+    time2 = []
+    for i in range(100):
+        t1 = time.time()
+        x = randint(100, 3000)
+        w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_root_n/'+each, interval_length='one', instance_num=x)
+        t2 = time.time()
+        time2.append(t2-t1)
+    time_dict['k_root_n'] = mean(time2)
+
+    time3 = []
+    for i in range(100):
+        t1 = time.time()
+        x = randint(100, 3000)
+        w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_thousand/'+each, interval_length='one', instance_num=x)
+        t2 = time.time()
+        time3.append(t2-t1)
+    time_dict['k_thousand'] = mean(time3)
+
+    time4 = []
+    for i in range(100):
+        t1 = time.time()
+        x = randint(100, 3000)
+        w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_n/'+each, interval_length='one', instance_num=x)
+        t2 = time.time()
+        time4.append(t2-t1)
+    time_dict['k_n'] = mean(time4)    
+   
 
