@@ -472,28 +472,31 @@ class wikiRetrieval(object):
         n = kwargs['instance_num']
         returnResult = []
         original = n
+        dmp = diff_match_patch()
         #m = int((math.log(length)) ** 2) + 1
         if n % m != 0:
             interval = n - (n % m) + 1
             #print('interval', interval)
             n = n - interval + 1
+            count = interval
+            prev_str = revisionsDict[count]
+            result = prev_str
+            while count < original:
+                #print("yes")
+                count += 1
+                #print(repr(revisionsDict[count]))
+                current_str = revisionsDict[count]
+                print(revisionsDict[count])
+                patches = dmp.patch_fromText(current_str)
+                result, _ = dmp.patch_apply(patches, prev_str)
+                
+                prev_str = result
         else:
             interval = n - (m - 1)
             n = n - interval + 1
-
-        dmp = diff_match_patch()
-        count = interval
-        prev_str = revisionsDict[count]
-        result = prev_str
-        while count < original:
-            #print("yes")
-            count += 1
-            #print(repr(revisionsDict[count]))
-            current_str = revisionsDict[count]
-            patches = dmp.patch_fromText(current_str)
-            result, _ = dmp.patch_apply(patches, prev_str)
-            
-            prev_str = result
+            count = interval
+            prev_str = revisionsDict[count]
+            result = prev_str
         
         return result
 
@@ -524,37 +527,37 @@ class wikiRetrieval(object):
             intervalLength = int((length)**(1/2))
             #print('length', length)
             #print('intervalLength', intervalLength)
-            t1 = time.time()
+            #t1 = time.time()
             result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
-            t2 = time.time()
-            print(t2-t1)
+            #t2 = time.time()
+            #print(t2-t1)
         
         if interval_length == 'thousand':
             intervalLength = 1000
             #print('length', length)
             #print('intervalLength', intervalLength)
-            t1 = time.time()
+            #t1 = time.time()
             result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
-            t2 = time.time()
-            print(t2-t1)
+            #t2 = time.time()
+            #print(t2-t1)
             
         if interval_length == 'n':
             intervalLength = length - 1
             #print('length', length)
             #print('intervalLength', intervalLength)
-            t1 = time.time()
+            #t1 = time.time()
             result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
-            t2 = time.time()
-            print(t2-t1)
+            #t2 = time.time()
+            #print(t2-t1)
 
         if interval_length == 'one':
             intervalLength = 1
             #print('length', length)
             #print('intervalLength', intervalLength)
-            t1 = time.time()
+            #t1 = time.time()
             result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
-            t2 = time.time()
-            print(t2-t1)
+            #t2 = time.time()
+            #print(t2-t1)
     '''
     Following methods are used to download the relevant dataset from archive in Knol-ML format
     '''
@@ -675,44 +678,46 @@ path_name = '/home/descentis/knolml_dataset/output/article_list/'
 from random import randint
 from statistics import mean 
 time_dict = {}
-for each in article_list:
-    file_name = path_name+each
-    '''
-    time1 = []
-    for i in range(100):
-        t1 = time.time()
-        x = randint(100, 3000)
-        w.wikiConvert(file_name='/home/descentis/research/working_datasets/wikced/k_one/'+each, interval_length='one', instance_num=x)
-        t2 = time.time()
-        time1.append(t2-t1)
-    time_dict['k_one'] = mean(time1)
-    '''
+#for each in article_list:
+each = 'George_W._Bush.knolml'
+file_name = path_name+each
 
-    time2 = []
-    for i in range(100):
-        t1 = time.time()
-        x = randint(100, 3000)
-        w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_root_n/'+each, interval_length='one', instance_num=x)
-        t2 = time.time()
-        time2.append(t2-t1)
-    time_dict['k_root_n'] = mean(time2)
+'''
+time1 = []
+for i in range(100):
+    t1 = time.time()
+    x = randint(100, 3000)
+    w.wikiConvert(file_name='/home/descentis/research/working_datasets/wikced/k_one/'+each, interval_length='one', instance_num=x)
+    t2 = time.time()
+    time1.append(t2-t1)
+time_dict['k_one'] = mean(time1)
+'''
 
-    time3 = []
-    for i in range(100):
-        t1 = time.time()
-        x = randint(100, 3000)
-        w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_thousand/'+each, interval_length='one', instance_num=x)
-        t2 = time.time()
-        time3.append(t2-t1)
-    time_dict['k_thousand'] = mean(time3)
+time2 = []
+for i in range(100):
+    x = randint(100, 3000)
+    t1 = time.time()   
+    w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_root_n/'+each, interval_length='root_n', instance_num=x)
+    t2 = time.time()
+    time2.append(t2-t1)
+time_dict['k_root_n'] = mean(time2)
 
-    time4 = []
-    for i in range(100):
-        t1 = time.time()
-        x = randint(100, 3000)
-        w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_n/'+each, interval_length='one', instance_num=x)
-        t2 = time.time()
-        time4.append(t2-t1)
-    time_dict['k_n'] = mean(time4)    
-   
+time3 = []
+for i in range(100):
+    x = randint(100, 3000)
+    t1 = time.time()
+    w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_thousand/'+each, interval_length='thousand', instance_num=x)
+    t2 = time.time()
+    time3.append(t2-t1)
+time_dict['k_thousand'] = mean(time3)
+
+time4 = []
+for i in range(100):
+    x = randint(100, 3000)
+    t1 = time.time()
+    w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_n/'+each, interval_length='n', instance_num=x)
+    t2 = time.time()
+    time4.append(t2-t1)
+time_dict['k_n'] = mean(time4)    
+  
 
