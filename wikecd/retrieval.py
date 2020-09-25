@@ -199,20 +199,18 @@ class wikiRetrieval(object):
                     text_field = t+t+t+t+"<Text Type="+'"'+"wiki/text"+'"'+" Bytes="+'"'+str(0)+'">'
                 myFile.write(text_field)
                 if(ch_elem.text == None):                
-                    text_body = "";
+                    current_str = "";
                 else:
                     current_str = ch_elem.text
-                    if kwargs['compression'].lower() == 'difflib':
-                        ch_elem.text = self.encode(prev_str, current_str)
-                    elif kwargs['compression'].lower() == 'diff_match':
-                        dmp = diff_match_patch()
-                        p = dmp.patch_make(prev_str,current_str)
-                        ch_elem.text = dmp.patch_toText(p)
+                if kwargs['compression'].lower() == 'difflib':
+                    ch_elem.text = self.encode(prev_str, current_str)
+                elif kwargs['compression'].lower() == 'diff_match':
+                    dmp = diff_match_patch()
+                    p = dmp.patch_make(prev_str,current_str)
+                    ch_elem.text = dmp.patch_toText(p)
                     
-                    text_body = html.escape(ch_elem.text)    
-                    #text_body = textwrap.indent(text=ch_elem.text, prefix=t+t+t+t+t)
-                    #text_body = html.escape(text_body)                        
-                Body_text = text_body+"\n"
+                text_body = html.escape(ch_elem.text)                     
+                Body_text = text_body
                 myFile.write(Body_text)
                 text_field = "</Text>\n"
                 myFile.write(text_field)        
@@ -486,7 +484,7 @@ class wikiRetrieval(object):
                 count += 1
                 #print(repr(revisionsDict[count]))
                 current_str = revisionsDict[count]
-                print(revisionsDict[count])
+                #print(revisionsDict[count])
                 patches = dmp.patch_fromText(current_str)
                 result, _ = dmp.patch_apply(patches, prev_str)
                 
@@ -533,7 +531,7 @@ class wikiRetrieval(object):
             #print(t2-t1)
         
         if interval_length == 'thousand':
-            intervalLength = 1000
+            intervalLength = 1001
             #print('length', length)
             #print('intervalLength', intervalLength)
             #t1 = time.time()
@@ -667,7 +665,7 @@ for each in article_list:
 
 t2 = time.time()
 print(t2-t1)
-'''
+
 
 w = wikiRetrieval()
 
@@ -682,7 +680,7 @@ time_dict = {}
 each = 'George_W._Bush.knolml'
 file_name = path_name+each
 
-'''
+
 time1 = []
 for i in range(100):
     t1 = time.time()
@@ -691,7 +689,7 @@ for i in range(100):
     t2 = time.time()
     time1.append(t2-t1)
 time_dict['k_one'] = mean(time1)
-'''
+
 
 time2 = []
 for i in range(100):
@@ -719,5 +717,5 @@ for i in range(100):
     t2 = time.time()
     time4.append(t2-t1)
 time_dict['k_n'] = mean(time4)    
-  
+'''  
 
