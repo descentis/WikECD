@@ -100,11 +100,14 @@ with open('newk/report_newk_random.csv', 'r') as myFile:
 new_ratio = [x for _,x in sorted(zip(newc_list,new_ratio))]
 
 new_ratio[1710] = 0.23
-plt.plot(xAxis, new_ratio,markersize=2, marker='.',markerfacecolor='red', color='olive',linestyle='dashed', linewidth=0.5, label='k = estimated')
-plt.plot(xAxis,thousand_ratio,markersize=3, marker='.', markerfacecolor='blue', color='skyblue', linewidth=0.5, label='k = fixed')
+plt.plot(xAxis, new_ratio,markersize=2, marker='.',markerfacecolor='red', color='olive',linestyle='dashed', linewidth=0.5, label=r'$k = \sqrt{n\left(\dfrac{m-d}{m+d}\right)}$')
+plt.plot(xAxis,thousand_ratio,markersize=3, marker='.', markerfacecolor='blue', color='skyblue', linewidth=0.5, label=r'$k = 1000$')
 
-plt.legend(loc="upper left")
+leg = plt.legend(loc="upper right",markerscale=2, prop={'size': 8})
 #plt.scatter(xAxis,new_access,s=m_size,marker='^', color='orange', linewidth=2)
+# set the linewidth of each legend object
+for legobj in leg.legendHandles:
+    legobj.set_linewidth(2.0)
 plt.xlabel('Articles', fontsize=18)
 plt.ylabel('Compression Ratio', fontsize=16)
 plt.savefig('compression_ratio.png', dpi=800)

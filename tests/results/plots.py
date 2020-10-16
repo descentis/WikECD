@@ -76,9 +76,14 @@ m_size = [4]*len(new_access)
 
 fig = plt.figure()
 #plt.vlines(x=xAxis,ymin=0,ymax=t_access, color='orange', alpha=0.4)
-plt.plot(xAxis,access_time,markersize=2, marker='.',markerfacecolor='red', color='olive',linestyle='dashed', linewidth=0.5, label='k = estimated')
-plt.plot(xAxis,t_access,markersize=3, marker='.', markerfacecolor='blue', color='skyblue', linewidth=0.5, label='k = fixed')
-plt.legend(loc="upper left")
+plt.plot(xAxis,access_time,markersize=2, marker='.',markerfacecolor='red', color='olive',linestyle='dashed', linewidth=0.5, label=r'$k = \sqrt{n\left(\dfrac{m-d}{m+d}\right)}$')
+plt.plot(xAxis,t_access,markersize=3, marker='.', markerfacecolor='blue', color='skyblue', linewidth=0.5, label=r'$k = 1000$')
+leg = plt.legend(loc="upper left",markerscale=2, prop={'size': 8})
+# set the linewidth of each legend object
+for legobj in leg.legendHandles:
+    legobj.set_linewidth(2.0)
+
+
 #plt.scatter(xAxis,new_access,s=m_size,marker='^', color='orange', linewidth=2)
 plt.xlabel('Articles', fontsize=18)
 plt.ylabel('Extraction Time', fontsize=16)

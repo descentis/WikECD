@@ -560,7 +560,6 @@ class wikiRetrieval(object):
     Following methods are used to download the relevant dataset from archive in Knol-ML format
     '''
 
-    '''
     def extract_from_bzip(self, *args, **kwargs):
         # file, art, index, home, key
         file = kwargs['file']
@@ -646,7 +645,7 @@ class wikiRetrieval(object):
                             print("Found hit for article " + l[0])
                             # file, art, index, home, key
                             self.extract_from_bzip(file=l[1], art=l[0], index=int(l[2]), home=home, key=key)
-    '''
+
 
 '''
 article_list = ['George_W._Bush.xml', 'Donald_Trump.xml', 'List_of_WWE_personnel.xml', 'United_States.xml']
