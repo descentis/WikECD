@@ -283,7 +283,7 @@ class wikiRetrieval(object):
             title_text = ''
             #try:
             count = 0
-            m = intervalLength+1
+            m = intervalLength
             for event, elem in context_wiki:
                 
                 if event == "end" and 'id' in elem.tag:
@@ -304,19 +304,19 @@ class wikiRetrieval(object):
                 if event == "end" and 'revision' in elem.tag:
                     
                     count+=1
-                    if m != intervalLength+1:
+                    if count % intervalLength != 0:
                         with open(file_path,"a",encoding='utf-8') as myFile:
                             prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression=compression)
                         # print("Revision ", count, " written")
             			
-                        m = m - 1
-                        if m == 0:
-                            m = intervalLength+1
+                        #m = m - 1
+                        #if m == 0:
+                            #m = intervalLength+1
                     
                     else:
                         with open(file_path,"a",encoding='utf-8') as myFile:
                             prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression='none')
-                        m = m-1
+                        #m = m-1
                         
                     elem.clear()
                     root_wiki.clear() 
