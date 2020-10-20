@@ -303,7 +303,7 @@ class wikiRetrieval(object):
                     title_text = None
                 if event == "end" and 'revision' in elem.tag:
                     
-                    count+=1
+                    
                     if count % intervalLength != 0:
                         with open(file_path,"a",encoding='utf-8') as myFile:
                             prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression=compression)
@@ -317,7 +317,8 @@ class wikiRetrieval(object):
                         with open(file_path,"a",encoding='utf-8') as myFile:
                             prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression='none')
                         #m = m-1
-                        
+                    count+=1
+                    
                     elem.clear()
                     root_wiki.clear() 
             #except:
@@ -440,6 +441,7 @@ class wikiRetrieval(object):
                     intervalLength = 1
                 if kwargs['k'] == 'rootn':
                     intervalLength = int(length**(1/2))
+                    print(intervalLength)
                 if kwargs['k'] == 'thousand':
                     intervalLength = 1000
                 if kwargs['k'] == 'n':
