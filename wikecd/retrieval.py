@@ -474,6 +474,24 @@ class wikiRetrieval(object):
         original = n
         dmp = diff_match_patch()
         #m = int((math.log(length)) ** 2) + 1
+ 
+        #testing the extraction with new interval
+        if (n-1)%m != 0:
+            count = int((n-1)/m)*m + 1
+            prev_str = revisionsDict[count]
+            result = prev_str
+            while count < n:
+                count += 1
+                current_str = revisionsDict[count]
+                patches = dmp.patch_fromText(current_str)
+                result, _ = dmp.patch_apply(patches, prev_str)
+                prev_str = result
+        
+        else:
+            prev_str = revisionsDict[n]
+            result = prev_str
+
+        '''
         if n % m != 0:
             interval = n - (n % m) + 1
             #print('interval', interval)
@@ -497,7 +515,7 @@ class wikiRetrieval(object):
             count = interval
             prev_str = revisionsDict[count]
             result = prev_str
-        
+        '''
         return result
 
     def instance_retreival(self, file_name, *args, **kwargs):
@@ -558,6 +576,7 @@ class wikiRetrieval(object):
             result = self.__extract_instance(revisionDict=revisionsDict, intervalLength=intervalLength, instance_num=n)
             #t2 = time.time()
             #print(t2-t1)
+        return result
     '''
     Following methods are used to download the relevant dataset from archive in Knol-ML format
     '''
