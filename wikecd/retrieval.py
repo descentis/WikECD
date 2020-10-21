@@ -29,6 +29,11 @@ class wikiRetrieval(object):
     '''
     The class with organize the full revision history of Wikipedia dataset
     '''
+    def __init__(self, *args, **kwargs):
+        if kwargs.get('interval_length') != None:
+            self.interval_length = kwargs['interval_length']
+        else:
+            self.interval_length = 'newk'
     
     instance_id = 1
     
