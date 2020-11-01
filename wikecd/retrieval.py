@@ -587,6 +587,14 @@ class wikiRetrieval(object):
     '''
 
     def extract_from_bzip(self, *args, **kwargs):
+        """Finds the correct name of articles present on Wikipedia
+
+        Parameters
+        ----------
+        article_list : list[str] or str
+            List of article names or single article name for which to find the correct name
+
+        """
         # file, art, index, home, key
         file = kwargs['file']
         art = kwargs['art']
