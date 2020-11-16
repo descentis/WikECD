@@ -258,7 +258,6 @@ class wikiRetrieval(object):
         #Creating a meta file for the wiki article
         
         
-        
         # To get an iterable for wiki file
         name = kwargs['name']
         compression = kwargs['compression_method']
