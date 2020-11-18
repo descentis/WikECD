@@ -25,6 +25,339 @@ from pyunpack import Archive
 import time
 
 
+class instances(object):
+    """
+    creating the instance of each object.
+    The init function defined stores each instance's attribute which can be analyzed separately
+    """
+
+    def __init__(self, instance, title):
+        # self.test = 'jsut to check the instances class'
+        # print(self.test)
+        # print(instance.tag)
+        self.instanceId = instance.attrib['Id']
+        self.instanceType = instance.attrib['InstanceType']
+        self.instanceTitle = title
+        if instance.attrib.get('RevisionId') is not None:
+            self.revId = instance.attrib['RevisionId']
+        self.instance_attrib = {}
+        for ch1 in instance:
+            if 'TimeStamp' in ch1.tag:
+                self.instance_attrib['TimeStamp'] = {}
+                for ch2 in ch1:
+                    if 'CreationDate' in ch2.tag:
+                        self.instance_attrib['TimeStamp']['CreationDate'] = ch2.text
+                    if 'LastEditDate' in ch2.tag:
+                        self.instance_attrib['TimeStamp']['LastEditDate'] = ch2.text
+                    if 'LastActivityDate' in ch2.tag:
+                        self.instance_attrib['TimeStamp']['LastActivityDate'] = ch2.text
+                    if 'CommunityOwnedDate' in ch2.tag:
+                        self.instance_attrib['TimeStamp']['CommunityOwnedDate'] = ch2.text
+                    if 'ClosedDate' in ch2.tag:
+                        self.instance_attrib['TimeStamp']['ClosedDate'] = ch2.text
+
+            if 'Contributors' in ch1.tag:
+                self.instance_attrib['Contributors'] = {}
+                for ch2 in ch1:
+                    if 'OwnerUserId' in ch2.tag:
+                        self.instance_attrib['Contributors']['OwnerUserId'] = ch2.text
+                    if 'OwnerUserName' in ch2.tag:
+                        self.instance_attrib['Contributors']['OwnerUserName'] = ch2.text
+                    if 'LastEditorUserId' in ch2.tag:
+                        self.instance_attrib['Contributors']['LastEditorUserId'] = ch2.text
+
+            if 'Body' in ch1.tag:
+                self.instance_attrib['Body'] = {}
+                for ch2 in ch1:
+                    if 'Text' in ch2.tag:
+                        self.instance_attrib['Body']['Text'] = {}
+                        self.instance_attrib['Body']['Text']['#Type'] = ch2.attrib['Type']
+                        self.instance_attrib['Body']['Text']['#Bytes'] = ch2.attrib['Bytes']
+                        self.instance_attrib['Body']['Text']['text'] = ch2.text
+
+            if 'Tags' in ch1.tag:
+                self.instance_attrib['Tags'] = ch1.text
+
+            if 'Credit' in ch1.tag:
+                self.instance_attrib['Credit'] = {}
+                for ch2 in ch1:
+                    if 'Score' in ch2.tag:
+                        self.instance_attrib['Credit']['Score'] = ch2.text
+                    if 'CommentCount' in ch2.tag:
+                        self.instance_attrib['Credit']['CommentCount'] = ch2.text
+                    if 'ViewCount' in ch2.tag:
+                        self.instance_attrib['Credit']['ViewCount'] = ch2.text
+                    if 'AnswerCount' in ch2.tag:
+                        self.instance_attrib['Credit']['AnswerCount'] = ch2.text
+                    if 'FavouriteCount' in ch2.tag:
+                        self.instance_attrib['Credit']['FavouriteCount'] = ch2.text
+
+    def is_question(self):
+        """
+        Returns True if the instance is a question
+        Works with QnA based knolml dataset
+
+        Returns
+        -------
+        \*\*closed : bool
+            Returns true if the post is a question , if applicable
+        """
+        if self.instanceType == 'Question':
+            return True
+
+    def is_answer(self):
+        """
+        Returns True if the instance is an answer
+        Works with QnA based knolml dataset
+
+        Returns
+        -------
+        \*\*closed : bool
+            Returns true if the post is an answer, if applicable
+        """
+        if self.instanceType == 'Answer':
+            return True
+
+    def is_comment(self):
+        """
+        Returns True if the instance is a comment
+        Works with QnA based knolml dataset
+        
+        Returns
+        -------
+        \*\*closed : bool
+            Returns true if the post is a comment, if applicable
+        """
+        if self.instanceType == 'Comments':
+            return True
+
+    def is_closed(self):
+        """
+        Returns True if the qna thread is closed
+        Works with QnA based knolml dataset
+        
+        Returns
+        -------
+        \*\*closed : bool
+            Returns true if the post is close, if applicable
+        """
+        if self.instance_attrib['TimeStamp'].get('ClosedDate') is None:
+            return True
+
+    def just_to_check(self):
+        print("just to check function")
+        print(self.instanceId)
+        print(self.instanceType)
+
+    def get_editor(self):
+        """
+        Returns the edior details
+
+        Returns
+        -------
+        \*\*editor : dictionary
+            Details related to the editor of this instance
+        """
+        di = {}
+        if self.instance_attrib['Contributors'].get('OwnerUserId') is not None:
+            di['OwnerUserId'] = self.instance_attrib['Contributors']['OwnerUserId']
+        if self.instance_attrib['Contributors'].get('OwnerUserName') is not None:
+            di['OwnerUserName'] = self.instance_attrib['Contributors']['OwnerUserName']
+        if self.instance_attrib['Contributors'].get('LastEditorUserId') is not None:
+            di['LastEditorUserId'] = self.instance_attrib['Contributors']['LastEditorUserId']
+        return di
+
+    def get_title(self):
+        """
+        Returns the title
+
+        Returns
+        -------
+        \*\*title : str
+            Title of the Knowledge Data
+        """
+        return self.instanceTitle
+
+    def get_tags(self):
+        """
+        Returns the tag details
+        Works for QnA dataset
+        
+        Returns
+        -------
+        \*\*tags : list
+            List of tags, if available
+        """
+        if self.instance_attrib.get('Tags') is not None:
+            return self.instance_attrib['Tags'].split('><')
+        else:
+            print("No tags are found")
+
+    def get_timestamp(self):
+        """
+        Returns the timestamp details
+        
+        Returns
+        -------
+        \*\*timestamp : dictionary
+            Timestamp details of this instance
+        """
+        di = {}
+        if self.instance_attrib['TimeStamp'].get('CreationDate') is not None:
+            di['CreationDate'] = self.instance_attrib['TimeStamp']['CreationDate']
+        if self.instance_attrib['TimeStamp'].get('LastEditDate') is not None:
+            di['LastEditDate'] = self.instance_attrib['TimeStamp']['LastEditDate']
+        if self.instance_attrib['TimeStamp'].get('LastActivityDate') is not None:
+            di['LastActivityDate'] = self.instance_attrib['TimeStamp']['LastActivityDate']
+        if self.instance_attrib['TimeStamp'].get('CommunityOwnedDate') is not None:
+            di['CommunityOwnedDate'] = self.instance_attrib['TimeStamp']['CommunityOwnedDate']
+        if self.instance_attrib['TimeStamp'].get('ClosedDate') is not None:
+            di['ClosedDate'] = self.instance_attrib['TimeStamp']['ClosedDate']
+        return di
+
+    def get_score(self):
+        """
+        Returns the score details
+        
+        Returns
+        -------
+        \*\*score : dictionary
+            A dictionary of score values, if available
+        """
+        if self.instance_attrib.get('Credit') is None:
+            return 'Score value is not available'
+        di = {}
+        if self.instance_attrib['Credit'].get('Score') is not None:
+            di['Score'] = self.instance_attrib['Credit']['Score']
+        if self.instance_attrib['Credit'].get('CommentCount') is not None:
+            di['CommentCount'] = self.instance_attrib['Credit']['CommentCount']
+        if self.instance_attrib['Credit'].get('ViewCount') is not None:
+            di['ViewCount'] = self.instance_attrib['Credit']['ViewCount']
+        if self.instance_attrib['Credit'].get('AnswerCount') is not None:
+            di['AnswerCount'] = self.instance_attrib['Credit']['AnswerCount']
+        if self.instance_attrib['Credit'].get('FavouriteCount') is not None:
+            di['FavouriteCount'] = self.instance_attrib['Credit']['FavouriteCount']
+        return di
+
+    def get_text(self, *args, **kwargs):
+        """
+        Returns the text data
+        
+        Parameters
+        ----------
+        \*\*clean : bool, optional
+        
+        Returns
+        -------
+        \*\*text : str
+            actual text of the instance
+        """
+        di = {}
+
+        if self.instance_attrib['Body']['Text'].get('text') is not None:
+            di['text'] = self.instance_attrib['Body']['Text']['text']
+        clean = False
+        if kwargs.get('clean') is not None:
+            clean = kwargs['clean']
+            if clean:
+                di['text'] = getCleanText(di['text'])
+
+                '''
+                qe = QueryExecutor()
+                qe.setOutputFileDirectoryName('lol')
+                qe.setNumberOfProcesses(5)
+                qe.setNumberOfBytes(2000000000)
+                qe.setTextValue(di['text'])
+                qe.runQuery()
+                return qe.result()
+                '''
+        return di
+
+    def get_bytes(self):
+        """
+        Returns the bytes detail
+        
+        Returns
+        -------
+        \*\*bytes : int
+            number of bytes given text has
+        """
+        if self.instance_attrib['Body']['Text'].get('#Bytes') is not None:
+            return int(self.instance_attrib['Body']['Text']['#Bytes'])
+
+    def __count_words(self, text):
+        """Returns number of words in the text
+
+        Parameters
+        ----------
+        text : str
+            TODO
+        """
+        text = text.lower()
+        skips = [".", ",", ":", ";", "'", '"']
+        for ch in skips:
+            text = text.replace(ch, "")
+        word_counts = Counter(text.split(" "))
+        return word_counts
+
+    def __get_emailid(self, text):
+        """Returns the email ids in the text
+
+        Parameters
+        ----------
+        text : str
+            TODO
+
+        """
+        lst = re.findall('\S+@\S+', text)
+        return lst
+
+    def __get_url(self, text):
+        """
+        Returns all the the urls in the text
+
+        Parameters
+        ----------
+        text : str
+            TODO
+
+        """
+        url = re.findall('http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\), ]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', text)
+        return url
+
+    def get_text_stats(self, *args, **kwargs):
+        """
+        Returns the email ids in the text
+
+        Parameters
+        ----------
+        title : bool, optional
+
+        count_words : str, optional
+
+        url : str, optional
+
+        """
+        title = False
+        if kwargs.get('title') is not None:
+            if kwargs['title'] is True:
+                title = True
+        if title:
+            if kwargs.get('count_words') is not None:
+                return self.__count_words(self.title)
+            if kwargs.get('email_id') is not None:
+                return self.__get_emailid(self.title)
+            if kwargs.get('url') is not None:
+                return self.__get_url(self.title)
+        else:
+            if kwargs.get('count_words') is not None:
+                return self.__count_words(self.get_text(clean=True)['text'])
+            if kwargs.get('email_id') is not None:
+                return self.__get_emailid(self.get_text()['text'])
+            if kwargs.get('url') is not None:
+                return self.__get_url(self.get_text()['text'])
+
+
 class wikiRetrieval(object):
     '''
     The class with organize the full revision history of Wikipedia dataset
