@@ -272,7 +272,7 @@ class wikiRetrieval(object):
         event_wiki, root_wiki = next(context_wiki)
         file_name = name[:-4]+'.knolml'
         file_path = file_name
-        prev_str= ''
+        prev_checkpoint= ''
         if kwargs.get('output_dir')!=None:
             file_name = file_name.split('/')[-1]
             file_path = kwargs['output_dir']+'/'+file_name
@@ -311,7 +311,9 @@ class wikiRetrieval(object):
                     
                     if count % intervalLength != 0:
                         with open(file_path,"a",encoding='utf-8') as myFile:
-                            prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression=compression)
+
+                            # prev_checkpoint will not be updated, as count % intervalLength != 0
+                            _ = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_checkpoint,compression=compression)
                         # print("Revision ", count, " written")
             			
                         #m = m - 1
@@ -320,7 +322,8 @@ class wikiRetrieval(object):
                     
                     else:
                         with open(file_path,"a",encoding='utf-8') as myFile:
-                            prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression='none')
+                            # prev_checkpoint will be updated
+                            prev_checkpoint = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_checkpoint,compression='none')
                         #m = m-1
                     count+=1
                     
@@ -482,6 +485,7 @@ class wikiRetrieval(object):
  
         #testing the extraction with new interval
         if (n-1)%m != 0:
+            '''
             count = int((n-1)/m)*m + 1
             prev_str = revisionsDict[count]
             result = prev_str
@@ -491,6 +495,16 @@ class wikiRetrieval(object):
                 patches = dmp.patch_fromText(current_str)
                 result, _ = dmp.patch_apply(patches, prev_str)
                 prev_str = result
+            '''
+
+            # Set prev_str as the last checkpoint before n
+            count = int((n-1)/m)*m + 1
+            prev_str = revisionsDict[count]
+
+            # Set current_str and applying patch to retrieve result
+            current_str = revisionsDict[n-1]
+            patches = dmp.patch_fromText(current_str)
+            result, _ = dmp.patch_apply(patches, prev_str)
         
         else:
             prev_str = revisionsDict[n]
