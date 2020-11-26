@@ -272,7 +272,7 @@ class wikiRetrieval(object):
         event_wiki, root_wiki = next(context_wiki)
         file_name = name[:-4]+'.knolml'
         file_path = file_name
-        prev_str= ''
+        prev_checkpoint= ''
         if kwargs.get('output_dir')!=None:
             file_name = file_name.split('/')[-1]
             file_path = kwargs['output_dir']+'/'+file_name
@@ -311,7 +311,9 @@ class wikiRetrieval(object):
                     
                     if count % intervalLength != 0:
                         with open(file_path,"a",encoding='utf-8') as myFile:
-                            prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression=compression)
+
+                            # prev_checkpoint will not be updated, as count % intervalLength != 0
+                            _ = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_checkpoint,compression=compression)
                         # print("Revision ", count, " written")
             			
                         #m = m - 1
@@ -320,7 +322,8 @@ class wikiRetrieval(object):
                     
                     else:
                         with open(file_path,"a",encoding='utf-8') as myFile:
-                            prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression='none')
+                            # prev_checkpoint will be updated
+                            prev_checkpoint = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_checkpoint,compression='none')
                         #m = m-1
                     count+=1
                     
@@ -446,7 +449,7 @@ class wikiRetrieval(object):
                     intervalLength = 1
                 if kwargs['k'] == 'rootn':
                     intervalLength = int(length**(1/2))
-                    print(intervalLength)
+                    print("Root of revisions" + intervalLength)
                 if kwargs['k'] == 'thousand':
                     intervalLength = 1000
                 if kwargs['k'] == 'n':
@@ -482,6 +485,7 @@ class wikiRetrieval(object):
  
         #testing the extraction with new interval
         if (n-1)%m != 0:
+            '''
             count = int((n-1)/m)*m + 1
             prev_str = revisionsDict[count]
             result = prev_str
@@ -491,6 +495,16 @@ class wikiRetrieval(object):
                 patches = dmp.patch_fromText(current_str)
                 result, _ = dmp.patch_apply(patches, prev_str)
                 prev_str = result
+            '''
+
+            # Set prev_str as the last checkpoint before n
+            count = int((n-1)/m)*m + 1
+            prev_str = revisionsDict[count]
+
+            # Set current_str and applying patch to retrieve result
+            current_str = revisionsDict[n-1]
+            patches = dmp.patch_fromText(current_str)
+            result, _ = dmp.patch_apply(patches, prev_str)
         
         else:
             prev_str = revisionsDict[n]
@@ -546,7 +560,7 @@ class wikiRetrieval(object):
                 if 'Body' in child.tag:
                     revisionsDict[instanceId] = child[0].text
         
-        if interval_length == 'rootn':
+        if interval_length == 'rootn' or interval_length == 'root_n':
             intervalLength = int((length)**(1/2))
             #print('length', length)
             #print('intervalLength', intervalLength)
@@ -682,62 +696,63 @@ class wikiRetrieval(object):
 
 
 '''
-article_list = ['George_W._Bush.xml', 'Donald_Trump.xml', 'List_of_WWE_personnel.xml', 'United_States.xml']
+article_list = ['Donald_Trump.xml']
 
-path_name = '/home/descentis/knolml_dataset/output/article_list/'
+path_name = 'E:/wikced/'
 
 w = wikiRetrieval()
 
 t1 = time.time()
 for each in article_list:
     file_name = path_name+each
-    w.wikiConvert(file_name=file_name, output_dir='/home/descentis/research/working_datasets/wikced/k_one', k=1)
-    w.wikiConvert(file_name=file_name, output_dir='/home/descentis/research/working_datasets/wikced/k_root_n', k='rootn')
-    w.wikiConvert(file_name=file_name, output_dir='/home/descentis/research/working_datasets/wikced/k_thousand', k='thousand')
-    w.wikiConvert(file_name=file_name, output_dir='/home/descentis/research/working_datasets/wikced/k_n', k='n')
+    w.wikiConvert(file_name=file_name, output_dir='E:/wikced/k_one', k=1)
+    w.wikiConvert(file_name=file_name, output_dir='E:/wikced/k_root_n', k='rootn')
+    w.wikiConvert(file_name=file_name, output_dir='E:/wikced/k_thousand', k='thousand')
+    w.wikiConvert(file_name=file_name, output_dir='E:/wikced/k_n', k='n')
 
 t2 = time.time()
 print(t2-t1)
 
+'''
 
 w = wikiRetrieval()
 
-article_list = ['George_W._Bush.knolml', 'Donald_Trump.knolml', 'List_of_WWE_personnel.knolml', 'United_States.knolml']
+article_list = ['Donald_Trump.knolml']
 
-path_name = '/home/descentis/knolml_dataset/output/article_list/'
+path_name = 'E:/wikced/'
 
 from random import randint
 from statistics import mean 
 time_dict = {}
 #for each in article_list:
-each = 'George_W._Bush.knolml'
+each = 'Donald_Trump.knolml'
 file_name = path_name+each
 
-
+'''
 time1 = []
 for i in range(100):
     t1 = time.time()
     x = randint(100, 3000)
-    w.wikiConvert(file_name='/home/descentis/research/working_datasets/wikced/k_one/'+each, interval_length='one', instance_num=x)
+    w.wikiConvert(file_name='E:/wikced/k_one/'+each, interval_length='one', instance_num=x)
     t2 = time.time()
     time1.append(t2-t1)
 time_dict['k_one'] = mean(time1)
-
+'''
 
 time2 = []
 for i in range(100):
     x = randint(100, 3000)
     t1 = time.time()   
-    w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_root_n/'+each, interval_length='root_n', instance_num=x)
+    w.instance_retreival(file_name='E:/wikced/k_root_n/'+each, interval_length='root_n', instance_num=x)
     t2 = time.time()
     time2.append(t2-t1)
 time_dict['k_root_n'] = mean(time2)
-
+'''
 time3 = []
 for i in range(100):
     x = randint(100, 3000)
     t1 = time.time()
-    w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_thousand/'+each, interval_length='thousand', instance_num=x)
+    w.instance_retreival(file_name='E:/wikced/k_thousand/'+each, interval_length='thousand', instance_num=x)
     t2 = time.time()
     time3.append(t2-t1)
 time_dict['k_thousand'] = mean(time3)
@@ -746,9 +761,8 @@ time4 = []
 for i in range(100):
     x = randint(100, 3000)
     t1 = time.time()
-    w.instance_retreival(file_name='/home/descentis/research/working_datasets/wikced/k_n/'+each, interval_length='n', instance_num=x)
+    w.instance_retreival(file_name='E:/wikced/k_n/'+each, interval_length='n', instance_num=x)
     t2 = time.time()
     time4.append(t2-t1)
 time_dict['k_n'] = mean(time4)    
-'''  
-
+'''
