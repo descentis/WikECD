@@ -23,6 +23,7 @@ import wikipedia
 from internetarchive import download
 from pyunpack import Archive
 import time
+import re
 
 
 class instances(object):
@@ -1013,6 +1014,39 @@ class wikiRetrieval(object):
                             # file, art, index, home, key
                             self.extract_from_bzip(file=l[1], art=l[0], index=int(l[2]), home=home, key=key)
 
+
+
+# GPU testing
+
+from numba import jit, cuda
+
+@jit(target='cuda') 
+def compress_files_gpu(article_list):
+        
+    w = wikiRetrieval()
+    
+    for each in article_list:
+        w.wikiConvert(file_name=each, output_dir='/home/descentis/research/working_datasets/compression_gpu/compressed_gpu', k='rootn')
+        
+
+def compress_files_cpu(article_list):
+    
+    w = wikiRetrieval()
+    
+    for each in article_list:
+        w.wikiConvert(file_name=each, output_dir='/home/descentis/research/working_datasets/compression_gpu/compressed_cpu', k='rootn')
+        
+t1 = time.time()
+article_list = glob.glob('/home/descentis/research/working_datasets/compression_gpu/articles')
+compress_files_gpu(article_list)
+t2 = time.time()
+print(t2-t1)
+
+t1 = time.time()
+article_list = glob.glob('/home/descentis/research/working_datasets/compression_gpu/articles')
+compress_files_cpu(article_list)
+t2 = time.time()
+print(t2-t1)
 
 '''
 article_list = ['George_W._Bush.xml', 'Donald_Trump.xml', 'List_of_WWE_personnel.xml', 'United_States.xml']
