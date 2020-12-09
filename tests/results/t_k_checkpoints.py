@@ -27,6 +27,7 @@ import requests
 import io
 from random import randint
 import time
+import pandas as pd
 
 
 class wikiRetrieval(object):
@@ -340,6 +341,7 @@ class wikiRetrieval(object):
                             prev_str = self.wiki_file_writer(elem=elem,myFile=myFile,prefix=prefix,prev_str=prev_str,compression='none')
                         m = m-1
                         
+                        
                     elem.clear()
                     root_wiki.clear() 
             #except:
@@ -399,6 +401,24 @@ class wikiRetrieval(object):
                 root_wiki.clear()
         
         return avg_revision_length
+
+    @staticmethod
+    def get_new_k(revision_len):
+        n = len(revision_len)
+        m = (sum(revision_len)*0.001)/n
+
+        diff = 0
+
+        for i in range(n-1):
+            diff = diff + abs(revision_len[i] - revision_len[i+1])
+        
+        d = (diff*0.01)/n
+
+        t1 = n*(m-d) 
+        t2 = m*d
+
+        new_k = int(math.sqrt(t1/t2))
+        return new_k
 
     @staticmethod
     def get_revision(revision,k,file_name):
@@ -877,7 +897,7 @@ class wikiRetrieval(object):
 
 w = wikiRetrieval()
 
-avg_list = w.read_xml(file_name='E:/wikced/Canberra.xml')
+avg_list = w.read_xml(file_name='E:/wikced/Antisthenes.xml')
 
 num_of_rev = len(avg_list)
 
@@ -885,34 +905,45 @@ avg_len = int(sum(avg_list)/num_of_rev)
 
 root = int(num_of_rev**(0.5))
 
+new_k = w.get_new_k(avg_list)
+
 list_of_checkpoints = []
 list_of_checkpoints.append(1)
-list_of_checkpoints.append(1000)
+list_of_checkpoints.append(2)
+list_of_checkpoints.append(100)
 list_of_checkpoints.append(root)
 list_of_checkpoints.append(num_of_rev)
+list_of_checkpoints.append(new_k)
+
+
+list_of_checkpoints.append(0)
 
 all_times = []
 for checkpoint in list_of_checkpoints:
-    #w.wikiConvert(file_name='E:/wikced/Canberra.xml', output_dir='E:/wikced/k_root_n', k=checkpoint)
+    w.wikiConvert(file_name='E:/wikced/Antisthenes.xml', output_dir='E:/wikced/k_root_n', k=checkpoint)
     # d=[]
 
     times = []
-    print('Interation ' + str(checkpoint))
+    print('Iteration ' + str(checkpoint))
     for i in range(100):
         x = randint(100, num_of_rev - 1)
-        time_taken = w.instance_retreival('E:/wikced/k_root_n/Canberra{}.knolml'.format(checkpoint), interval_length =  checkpoint, instance_num = x)
+        time_taken = w.instance_retreival('E:/wikced/k_root_n/Antisthenes{}.knolml'.format(checkpoint), interval_length =  checkpoint, instance_num = x)
         times.append(time_taken)
 
     all_times.append(times)
 
 
-column_names = ["one", "thousand", "root", "n"]
+column_names = ["one", "two", "thousand", "root", "n", "new_k"]
 
 df = pd.DataFrame(columns = column_names)
 
 df["one"] = all_times[0]
-df["thousand"] = all_times[1]
-df["root"] = all_times[2]
-df["n"] = all_times[3]
+
+df["two"] = all_times[1]
+df["thousand"] = all_times[2]
+df["root"] = all_times[3]
+df["n"] = all_times[4]
+df["new_k"] = all_times[5]
+
     
-df.to_csv('E:/wikced/Canberra_df.csv')
+df.to_csv('E:/wikced/Antisthenes_df.csv')
