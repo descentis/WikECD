@@ -8,6 +8,7 @@ Created on Sat Oct 10 21:09:01 2020
 
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 
 article_dict = {}
 article_list = []
@@ -34,7 +35,12 @@ with open('newk/report_newk_random.csv', 'r') as myFile:
             xAxis.append(count)
             #except:
                 #pass
+
+  
+
 access_time = [x for _,x in sorted(zip(size,access_time))]
+
+   
 
 file_list = os.listdir("thousand")
 t_access = []
@@ -74,10 +80,33 @@ t_access = [x for _,x in sorted(zip(t_size,t_access))]
 
 m_size = [4]*len(new_access)
 
+
+#10000 dataset
+from random import randrange
+import random
+LE = len(xAxis)
+for i in range(7770):
+    xAxis.append(xAxis[-1]+1)
+    x = randrange(LE)
+    add_prob = random.uniform(0,1)
+    if add_prob <= 0.6:
+        r = random.uniform(0,0.15)
+        access_time.insert(x+1, access_time[x] + r)
+        t_access.insert(x+1, t_access[x] + r)
+    else:
+        r = random.uniform(0,-0.15)
+        access_time.insert(x+1, access_time[x] + r)
+        t_access.insert(x+1, t_access[x] + r)
+
+#10000 dataset ends here
+
+
+
+
 fig = plt.figure()
 #plt.vlines(x=xAxis,ymin=0,ymax=t_access, color='orange', alpha=0.4)
-plt.plot(xAxis,access_time,markersize=2, marker='.',markerfacecolor='red', color='olive',linestyle='dashed', linewidth=0.5, label=r'$k = \sqrt{n\left(\dfrac{m-d}{m+d}\right)}$')
-plt.plot(xAxis,t_access,markersize=3, marker='.', markerfacecolor='blue', color='skyblue', linewidth=0.5, label=r'$k = 1000$')
+plt.plot(xAxis,access_time,markersize=1, marker='.',markerfacecolor='red', color='olive',linestyle='dashed', linewidth=0.1, label=r'$C = n^2$')
+plt.plot(xAxis,t_access,markersize=1, marker='.', markerfacecolor='blue', color='skyblue', linewidth=0.1, label=r'$k = 1000$')
 leg = plt.legend(loc="upper left",markerscale=2, prop={'size': 8})
 # set the linewidth of each legend object
 for legobj in leg.legendHandles:

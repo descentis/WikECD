@@ -768,10 +768,14 @@ class wikiRetrieval(object):
             event_wiki, root_wiki = next(context_wiki)
             
             length = 0
+            length array = []
             for event, elem in context_wiki:
                 if event == "end" and 'revision' in elem.tag:
                     length+=1
-
+                    
+                    for child in elem:
+                        if 'text' in child.tag:
+                            length_array.append(len(child.text))
                     elem.clear()
                     root_wiki.clear() 
             if kwargs.get('k') != None:

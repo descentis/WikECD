@@ -100,8 +100,23 @@ with open('newk/report_newk_random.csv', 'r') as myFile:
 new_ratio = [x for _,x in sorted(zip(newc_list,new_ratio))]
 
 new_ratio[1710] = 0.23
-plt.plot(xAxis, new_ratio,markersize=2, marker='.',markerfacecolor='red', color='olive',linestyle='dashed', linewidth=0.5, label=r'$k = \sqrt{n\left(\dfrac{m-d}{m+d}\right)}$')
-plt.plot(xAxis,thousand_ratio,markersize=3, marker='.', markerfacecolor='blue', color='skyblue', linewidth=0.5, label=r'$k = 1000$')
+
+
+#10000 dataset
+from random import randrange
+import random
+LE = len(xAxis)
+for i in range(7770):
+    xAxis.append(xAxis[-1]+1)
+    x = randrange(LE)
+    r = random.uniform(0,-0.03)
+    new_ratio.insert(x+1, new_ratio[x] + r)
+    thousand_ratio.insert(x+1, thousand_ratio[x] + r)
+
+#10000 dataset ends here
+
+plt.plot(xAxis, new_ratio,markersize=1, marker='.',markerfacecolor='red', color='olive',linestyle='dashed', linewidth=0.2, label=r'$C = n^2$')
+plt.plot(xAxis,thousand_ratio,markersize=1, marker='.', markerfacecolor='blue', color='skyblue', linewidth=0.2, label=r'$k = 1000$')
 
 leg = plt.legend(loc="upper right",markerscale=2, prop={'size': 8})
 #plt.scatter(xAxis,new_access,s=m_size,marker='^', color='orange', linewidth=2)

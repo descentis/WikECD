@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
  
 # Make a fake dataset
 height = [46, 93.25, 93.60, 95.02, 95.38]
-bars = (r'$k = 2$', r'$k = \sqrt{n\left(\dfrac{m-d}{m+d}\right)}$', r'$k = \sqrt{n}$', r'$k = 1000$', r'$k = n-1$')
+bars = (r'$k = 2$', r'$k = \sqrt{n\left(\dfrac{m-d}{m+d}\right)}$', r'$C = n^2$', r'$k = 1000$', r'$k = n-1$')
 y_pos = np.arange(len(bars))
 
 plt.bar(y_pos, height, color=(0.1, 0.1, 0.1, 0.1),  edgecolor='blue')
