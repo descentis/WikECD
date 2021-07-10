@@ -6,11 +6,11 @@ Created on Sun Sep  6 20:56:47 2020
 @author: descentis
 """
 
-from numba import jit, cuda
+# from numba import jit, cuda
 import os
-from multiprocessing import Process, Lock
+# from multiprocessing import Process, Lock
 import time
-import numpy as np
+# import numpy as np
 import glob
 import difflib
 import xml.etree.ElementTree as ET
@@ -18,11 +18,11 @@ from diff_match_patch import diff_match_patch
 import math
 import textwrap
 import html
-import requests
-import io
+# import requests
+# import io
 import wikipedia
-from internetarchive import download
-from pyunpack import Archive
+# from internetarchive import download
+# from pyunpack import Archive
 import time
 import re
 
@@ -598,6 +598,7 @@ class wikiRetrieval(object):
         # Creating a meta file for the wiki article
 
         # To get an iterable for wiki file
+        rev_lengths = kwargs['rev_lengths']
         name = kwargs['name']
         compression = kwargs['compression_method']
         intervalLength = kwargs['interval_length']
@@ -649,7 +650,8 @@ class wikiRetrieval(object):
                     title_text = None
                 if event == "end" and 'revision' in elem.tag:
 
-                    if count % intervalLength != 0:
+                    if count > 1 and rev_lengths[count-1]:
+
                         with open(file_path, "a", encoding='utf-8') as myFile:
                             prev_str = self.wiki_file_writer(
                                 elem=elem, myFile=myFile, prefix=prefix, prev_str=prev_str, compression=compression)
@@ -670,7 +672,9 @@ class wikiRetrieval(object):
                     root_wiki.clear()
             # except:
             #    print("found problem with the data: "+ file_name)
-
+            print("COUNTINGG", count)
+            print("len", len(rev_lengths))
+            print(rev_lengths)
             with open(file_path, "a", encoding='utf-8') as myFile:
                 myFile.write("\t</KnowledgeData>\n")
                 myFile.write("</KnolML>\n")
@@ -756,6 +760,54 @@ class wikiRetrieval(object):
 
         # print(length)
 
+    def knapSack_compressor(self, space_cost_saved, time_cost, max_cost):
+        n = len(space_cost_saved)
+        dp = [[0 for i in range(max_cost+1)] for j in range(n+1)]
+        ans = [False for k in range(n)]
+        for i in range(1, len(dp)):
+            for j in range(1, len(dp[0])):
+                if(j >= time_cost[i-1]):
+                    rcap = j-time_cost[i-1]
+
+                    if(dp[i-1][rcap]+space_cost_saved[i-1] > dp[i-1][j]):
+                        dp[i][j] = dp[i-1][rcap]+space_cost_saved[i-1]
+
+                    else:
+                        dp[i][j] = dp[i-1][j]
+
+                else:
+                    dp[i][j] = dp[i-1][j]
+        res = dp[n][max_cost]
+        val = res
+        w = max_cost
+        for x in range(n, 0, -1):
+            if val <= 0:
+                break
+            if val == dp[x-1][w]:
+                continue
+            else:
+                ans[x-1] = True
+                val = val - space_cost_saved[x-1]
+                w = w - time_cost[x-1]
+
+        return ans
+
+    def space_cost(self, arr):
+
+        costs = list()
+
+        for i in range(1, len(arr)):
+            costs.append(arr[i-1])
+
+        return costs
+
+    def time_costs(self, arr):
+        costs = list()
+        costs.sort()
+        for i in range(1, len(arr)):
+            costs.append(1+arr[i])
+        return costs
+
     def wikiConvert(self, *args, **kwargs):
 
         if(kwargs.get('output_dir') != None):
@@ -795,8 +847,14 @@ class wikiRetrieval(object):
                 if kwargs['k'] == 'n':
                     intervalLength = length-1
 
-            self.wiki_knolml_converter(name=file_name, compression_method=compression_method,
-                                       output_dir=output_dir, interval_length=intervalLength)
+            space_costs = self.space_cost(arr=length_array)
+            time_costs = self.time_costs(arr=length_array)
+            max_cost = len(length_array)**2  # TO BE MODIFIED
+            compress_checker = self.knapSack_compressor(
+                space_costs, time_costs, max_cost)
+
+            self.wiki_knolml_converter(rev_lengths=compress_checker, name=file_name,
+                                       compression_method=compression_method, output_dir=output_dir, interval_length=0)
             #file_name = file_name[:-4] + '.knolml'
             # self.compress(file_name,output_dir)
             # os.remove(file_name)
@@ -1035,38 +1093,38 @@ class wikiRetrieval(object):
 
 # GPU testing
 
-@jit(target='cuda')
-def compress_files_gpu(article_list):
+# @jit(target='cuda')
+# def compress_files_gpu(article_list):
 
-    w = wikiRetrieval()
+#     w = wikiRetrieval()
 
-    for each in article_list:
-        w.wikiConvert(
-            file_name=each, output_dir='/home/descentis/research/working_datasets/compression_gpu/compressed_gpu', k='rootn')
-
-
-def compress_files_cpu(article_list):
-
-    w = wikiRetrieval()
-
-    for each in article_list:
-        w.wikiConvert(
-            file_name=each, output_dir='/home/descentis/research/working_datasets/compression_gpu/compressed_cpu', k='rootn')
+#     for each in article_list:
+#         w.wikiConvert(
+#             file_name=each, output_dir='/home/descentis/research/working_datasets/compression_gpu/compressed_gpu', k='rootn')
 
 
-t1 = time.time()
-article_list = glob.glob(
-    '/home/descentis/research/working_datasets/compression_gpu/articles')
-compress_files_gpu(article_list)
-t2 = time.time()
-print(t2-t1)
+# def compress_files_cpu(article_list):
 
-t1 = time.time()
-article_list = glob.glob(
-    '/home/descentis/research/working_datasets/compression_gpu/articles')
-compress_files_cpu(article_list)
-t2 = time.time()
-print(t2-t1)
+#     w = wikiRetrieval()
+
+#     for each in article_list:
+#         w.wikiConvert(
+#             file_name=each, output_dir='/home/descentis/research/working_datasets/compression_gpu/compressed_cpu', k='rootn')
+
+
+# t1 = time.time()
+# article_list = glob.glob(
+#     '/home/descentis/research/working_datasets/compression_gpu/articles')
+# compress_files_gpu(article_list)
+# t2 = time.time()
+# print(t2-t1)
+
+# t1 = time.time()
+# article_list = glob.glob(
+#     '/home/descentis/research/working_datasets/compression_gpu/articles')
+# compress_files_cpu(article_list)
+# t2 = time.time()
+# print(t2-t1)
 
 '''
 article_list = ['George_W._Bush.xml', 'Donald_Trump.xml', 'List_of_WWE_personnel.xml', 'United_States.xml']
@@ -1138,3 +1196,7 @@ for i in range(100):
     time4.append(t2-t1)
 time_dict['k_n'] = mean(time4)    
 '''
+
+# w = wikiRetrieval()
+
+# w.wikiConvert(file_name='./Talk_Zoo_TV_Tour.xml', output_dir='Hola')
