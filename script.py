@@ -1,3 +1,4 @@
+# this is the sample run
 import os
 import math
 import t as wc
