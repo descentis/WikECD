@@ -147,6 +147,47 @@ wikecd retrieve-by-time \
   --print
 ```
 
+### 5. Retrieve using Heuristic DP
+
+Fast greedy:
+```
+wikecd compress-api \
+  --title "Python (programming language)" \
+  --limit 500 --out python.comp.gz \
+  --user-agent "WikECD/0.1 (+contact: you@example.com)" \
+  --solver heuristic --strategy greedy
+```
+
+Provable 
+$(1 − 𝜀)$
+$(1−ε)$ approx with $𝜀 = 0.05$
+
+$ε=0.05$:
+```
+wikecd compress-api \
+  --title "Python (programming language)" \
+  --limit 1000 --out python.comp.gz \
+  --user-agent "WikECD/0.1 (+contact: you@example.com)" \
+  --solver heuristic --strategy fptas --eps 0.05
+```
+
+Often-exact but memory-bounded:
+```
+wikecd compress-api \
+  --title "Python (programming language)" \
+  --limit 800 --out python.comp.gz \
+  --user-agent "WikECD/0.1 (+contact: you@example.com)" \
+  --solver heuristic --strategy sparse --max-states 200000
+```
+
+Exact DP (old behavior):
+```
+wikecd compress-api \
+  --title "Python (programming language)" \
+  --limit 300 --out python.comp.gz \
+  --user-agent "WikECD/0.1 (+contact: you@example.com)" \
+  --solver exact
+```
 Retrieves all revisions made between Jan 1 and Feb 1, 2024.
 
 ## Programmatic API
