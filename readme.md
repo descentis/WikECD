@@ -23,19 +23,18 @@ $R = \{r_0, r_1, ..., r_n\}$
 
 Each revision has a size:
 
-\[
-S = \{s_i \mid s_i = ||r_i||, 0 \le i \le n\}
-\]
+
+$S = \{s_i \mid s_i = ||r_i||, 0 \le i \le n\}$
 
 We can store revisions as:
 - **Full copies** (large space, fast retrieval), or
 - **Deltas** (small space, slower retrieval).
 
 ### 🎯 Objective
-Find an optimal partition \( P = \{p_1, p_2, ..., p_k\} \) such that:
+Find an optimal partition $\( P = \{p_1, p_2, ..., p_k\} \)$ such that:
 
-- **Space cost** \( \sum f^-(p_j) \) is minimized  
-- **Time cost** \( \sum t(p_j) \) ≤ fixed time budget \( C \)
+- **Space cost** $\( \sum f^-(p_j) \)$ is minimized  
+- **Time cost** $\( \sum t(p_j) \) ≤$ fixed time budget $\( C \)$
 
 This reduces to a **0/1 Knapsack problem**, where:
 - Items = revision pairs  
