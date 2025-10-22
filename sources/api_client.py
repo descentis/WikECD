@@ -1,0 +1,108 @@
+from __future__ import annotations
+from typing import Iterable, Optional
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+from .base import Revision, RevisionSource
+from time import sleep
+
+DEFAULT_UA = (
+    "WikECD/0.1 (+https://example.com/wikecd; contact: your-email@example.com) "
+    "python-requests"
+)
+
+def _session_with_retries(user_agent: str | None = None) -> requests.Session:
+    s = requests.Session()
+    s.headers.update({"User-Agent": user_agent or DEFAULT_UA})
+    retry = Retry(
+        total=5,
+        backoff_factor=1.0,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET"],
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    s.mount("https://", adapter)
+    s.mount("http://", adapter)
+    return s
+
+
+class MediaWikiAPISource(RevisionSource):
+    def __init__(
+        self,
+        api_url: str = "https://en.wikipedia.org/w/api.php",
+        session: Optional[requests.Session] = None,
+        user_agent: Optional[str] = None,
+        verbose: bool = False,                     # <— NEW
+        pause_seconds: float = 0.1,                # <— polite short pause between requests
+    ):
+        self.api_url = api_url
+        self.session = session or _session_with_retries(user_agent)
+        self.verbose = verbose
+        self.pause_seconds = pause_seconds
+
+    def get_revisions(self, *, title: Optional[str] = None, limit: int = 500) -> Iterable[Revision]:
+        if not title:
+            raise ValueError("title is required for API source")
+
+        params = {
+            "action": "query",
+            "format": "json",
+            "formatversion": "2",
+            "prop": "revisions",
+            "titles": title,
+            "rvprop": "ids|timestamp|content",
+            "rvslots": "main",
+            "rvlimit": min(limit, 500),
+            "rvdir": "newer",
+        }
+
+        cont = {}
+        yielded = 0
+        while True:
+            if self.verbose:
+                ua = self.session.headers.get("User-Agent", "")
+                print(f"[WikECD] GET {self.api_url}  (rvlimit={params['rvlimit']})  UA='{ua}'  cont={cont or '{}'}")
+
+            resp = self.session.get(self.api_url, params={**params, **cont}, timeout=60)
+
+            if self.verbose:
+                print(f"[WikECD] HTTP {resp.status_code}")
+                # print first 200 chars of body on non-2xx for clues
+                if resp.status_code >= 300:
+                    print("[WikECD] Body:", resp.text[:200])
+
+            if resp.status_code == 403:
+                raise requests.HTTPError(
+                    "403 Forbidden from Wikipedia API. Provide a descriptive User-Agent with contact info. "
+                    "Use --user-agent in CLI or MediaWikiAPISource(user_agent=...)."
+                )
+
+            resp.raise_for_status()
+            data = resp.json()
+
+            pages = data.get("query", {}).get("pages", [])
+            if self.verbose and not pages:
+                print("[WikECD] No pages returned in this batch.")
+
+            for page in pages:
+                for rev in page.get("revisions", []):
+                    revid = rev["revid"]
+                    timestamp = rev["timestamp"]
+                    text = rev.get("slots", {}).get("main", {}).get("content", "")
+                    yield Revision(revid=revid, timestamp=timestamp, text=text)
+                    yielded += 1
+                    if yielded >= limit:
+                        if self.verbose:
+                            print(f"[WikECD] Reached requested limit {limit}.")
+                        return
+
+            if "continue" in data and yielded < limit:
+                cont = data["continue"]
+                if self.verbose:
+                    print(f"[WikECD] Continue token: {cont}")
+                sleep(self.pause_seconds)
+            else:
+                if self.verbose:
+                    print("[WikECD] Completed without continue.")
+                break
