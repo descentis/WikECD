@@ -17,9 +17,9 @@ Naïvely storing all versions wastes storage, while delta-compression makes retr
 
 Given a sequence of article revisions:
 
-\[
-R = \{r_0, r_1, ..., r_n\}
-\]
+
+$R = \{r_0, r_1, ..., r_n\}$
+
 
 Each revision has a size:
 
