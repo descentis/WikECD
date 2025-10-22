@@ -11,7 +11,7 @@ def _ndiff(from_text: str, to_text: str) -> list[str]:
                               to_text.splitlines(keepends=True)))
 
 
-def compress_article(title: str, revisions: Iterable[Revision], time_budget: Optional[int] = None) -> CompressedArticle:
+def compress_article(title: str, revisions: Iterable[Revision], time_budget: Optional[int] = None, *, solver: str = "heuristic", strategy: str = "auto", eps: float = 0.1, max_states: int = 100_000,) -> CompressedArticle:
     revs = list(revisions)
     if not revs:
         return CompressedArticle(title=title, anchors=[], patches={}, meta={"title": title, "count": 0})
@@ -23,7 +23,9 @@ def compress_article(title: str, revisions: Iterable[Revision], time_budget: Opt
     revids = [int(r.revid) for r in revs]
     timestamps = [r.timestamp for r in revs]
 
-    chosen_transitions, partitions = optimal_partition_indices(sizes, time_budget=time_budget)
+    chosen_transitions, partitions = optimal_partition_indices(
+        sizes, time_budget=time_budget, solver=solver, strategy=strategy, eps=eps, max_states=max_states
+    )
 
     anchors: list[int] = [part[0] for part in partitions]
     patches: dict[tuple[int, int], list[str]] = {}

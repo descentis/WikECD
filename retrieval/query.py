@@ -53,6 +53,7 @@ def retrieve_by_revid(
         results.extend(retrieve_range(article, base_texts, idx, 0))
     return results
 
+
 def retrieve_by_time(
     article: CompressedArticle,
     base_texts: Dict[int, str],
