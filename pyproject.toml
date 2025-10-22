@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "WikECD"
+version = "0.1.0"
+description = "Wikipedia Efficient Compression & Decompression"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [{ name = "Amit Arjun Verma" }]
+
+# ---- Make sure this array is properly closed with ] ----
+dependencies = [
+  "requests>=2.31",
+  "tqdm>=4.66"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0"
+]
+
+[project.scripts]
+wikecd = "WikECD.cli:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["WikECD*"]
+exclude = ["tests*", "examples*"]
