@@ -106,3 +106,34 @@ class MediaWikiAPISource(RevisionSource):
                 if self.verbose:
                     print("[WikECD] Completed without continue.")
                 break
+
+
+def resolve_page_ids(titles: List[str], user_agent: Optional[str] = None) -> Dict[str, int]:
+    """
+    Resolve titles -> page_ids with normalization + redirects.
+    Returns {normalized_title: pageid}
+    """
+    s = _session_with_retries(user_agent)
+    url = "https://en.wikipedia.org/w/api.php"
+    out: Dict[str, int] = {}
+    BATCH = 50
+    for i in range(0, len(titles), BATCH):
+        batch = titles[i:i+BATCH]
+        params = {
+            "action": "query",
+            "format": "json",
+            "titles": "|".join(batch),
+            "redirects": 1,          # follow redirects
+            "converttitles": 1,      # normalize
+        }
+        resp = s.get(url, params=params, timeout=60)
+        resp.raise_for_status()
+        data = resp.json()
+        pages = data.get("query", {}).get("pages", {})
+        for _, page in pages.items():
+            if "missing" in page:
+                continue
+            title = page["title"]
+            out[title] = int(page["pageid"])
+    return out
+
