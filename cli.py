@@ -10,6 +10,7 @@ from .retrieval.query import retrieve_by_revid, retrieve_by_time
 
 from .sources.dump_locator import list_meta_history_parts, pick_parts_for_pageids, ensure_download
 from .sources.api_client import resolve_page_ids
+import os
 
 
 def main():
@@ -320,6 +321,7 @@ def main():
         from WikECD.sources.xml_parser import XMLDumpSource
         from WikECD.compression.compressor import compress_article
         from WikECD.storage.serializer import save
+        import os
 
         target = args.file
         # If it's a URL, download to cache first

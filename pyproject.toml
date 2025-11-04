@@ -19,7 +19,9 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-  "pytest>=8.0"
+  "pytest>=8.0",
+  "pytest-mock",
+  "mypy"
 ]
 
 [project.scripts]
