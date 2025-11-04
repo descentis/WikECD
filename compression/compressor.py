@@ -4,6 +4,10 @@ import difflib
 from ..sources.base import Revision
 from ..storage.compressed_store import CompressedArticle
 from .partitioner import optimal_partition_indices
+from WikECD.logger import get_logger
+import logging
+
+logger = get_logger("WikECD.compressor", level=logging.DEBUG)
 
 
 def _ndiff(from_text: str, to_text: str) -> list[str]:
@@ -38,7 +42,7 @@ def compress_article(title: str, revisions: Iterable[Revision], time_budget: Opt
             patches[(idx-1, idx)] = nd
             prev = texts[idx]
 
-    return CompressedArticle(
+    article = CompressedArticle(
         title=title,
         anchors=anchors,
         patches=patches,
@@ -46,7 +50,107 @@ def compress_article(title: str, revisions: Iterable[Revision], time_budget: Opt
             "title": title,
             "count": len(revs),
             "partitions": partitions,
-            "revids": revids,          # <— NEW
-            "timestamps": timestamps,   # <— NEW (ISO-like strings from API/XML)
+            "revids": revids,  # <— NEW
+            "timestamps": timestamps,  # <— NEW (ISO-like strings from API/XML)
         }
     )
+
+    # --- robustly populate article.base_texts from the input revisions (revs) ---
+    import logging
+    from WikECD.logger import get_logger
+    logger = get_logger("WikECD.compressor", level=logging.DEBUG)
+
+    try:
+        # Normalize anchors into a list of ints
+        anchors_attr = getattr(article, "anchors", None) or (
+            article.meta.get("anchors") if getattr(article, "meta", None) else None)
+        anchors_list = []
+        if anchors_attr is None:
+            anchors_list = []
+        elif isinstance(anchors_attr, dict):
+            anchors_list = sorted(int(k) for k in anchors_attr.keys())
+        elif isinstance(anchors_attr, (list, tuple)):
+            # Flatten groups like [[0,1],[2]] -> [0,2] and ensure ints
+            flat = []
+            for el in anchors_attr:
+                if isinstance(el, (list, tuple)) and el:
+                    try:
+                        flat.append(int(el[0]))
+                    except Exception:
+                        pass
+                else:
+                    try:
+                        flat.append(int(el))
+                    except Exception:
+                        pass
+            anchors_list = sorted(set(flat))
+        else:
+            try:
+                anchors_list = sorted(int(x) for x in anchors_attr)
+            except Exception:
+                anchors_list = []
+
+        # Get the revisions list that was passed to compress_article (we expect it in scope)
+        cvs_revs = None
+        if "revs" in locals():
+            cvs_revs = locals().get("revs")
+        else:
+            # fallback candidate names
+            for cand in ("revisions", "rev_list", "revision_list"):
+                if cand in locals():
+                    cvs_revs = locals()[cand]
+                    break
+
+        base_texts_map = {}
+        if cvs_revs is not None and anchors_list:
+            # helper to extract text from a revision object or raw string
+            def _rev_text(r):
+                if r is None:
+                    return None
+                if isinstance(r, str):
+                    return r
+                if isinstance(r, bytes):
+                    try:
+                        return r.decode("utf-8")
+                    except Exception:
+                        return None
+                for attr in ("text", "content", "body", "wikitext"):
+                    if hasattr(r, attr):
+                        v = getattr(r, attr)
+                        if isinstance(v, (str, bytes)):
+                            return v.decode("utf-8") if isinstance(v, bytes) else v
+                # last resort: try str(r)
+                try:
+                    s = str(r)
+                    return s
+                except Exception:
+                    return None
+
+            for a in anchors_list:
+                try:
+                    ai = int(a)
+                except Exception:
+                    continue
+                if cvs_revs is None:
+                    break
+                if 0 <= ai < len(cvs_revs):
+                    txt = _rev_text(cvs_revs[ai])
+                    if txt:
+                        base_texts_map[ai] = txt
+
+        if base_texts_map:
+            article.base_texts = base_texts_map
+            if not getattr(article, "meta", None):
+                article.meta = {}
+            article.meta["base_texts"] = base_texts_map
+            logger.debug("compress_article: populated article.base_texts keys=%r", sorted(base_texts_map.keys()))
+        else:
+            logger.debug("compress_article: no base_texts found to populate (anchors=%r, revs_len=%s)", anchors_list,
+                         (len(cvs_revs) if cvs_revs is not None else None))
+
+    except Exception as e:
+        # don't break compression if something goes wrong; log the exception
+        logger.warning("Could not populate article.base_texts (non-fatal): %s", e)
+    # --- end population block --
+
+    return article
