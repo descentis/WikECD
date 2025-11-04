@@ -11,19 +11,32 @@ DEFAULT_UA = (
     "python-requests"
 )
 
+
 def _session_with_retries(user_agent: str | None = None) -> requests.Session:
+    """
+    Return a requests.Session with retry logic.
+    Compatible with both older and newer urllib3 versions.
+    """
     s = requests.Session()
-    s.headers.update({"User-Agent": user_agent or DEFAULT_UA})
-    retry = Retry(
+
+    # Handle both 'allowed_methods' (new) and 'method_whitelist' (old)
+    retry_kwargs = dict(
         total=5,
-        backoff_factor=1.0,
-        status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["GET"],
-        raise_on_status=False,
+        backoff_factor=1,
+        status_forcelist=[500, 502, 503, 504],
     )
+    try:
+        retry = Retry(**retry_kwargs, allowed_methods=["GET"])
+    except TypeError:
+        retry = Retry(**retry_kwargs, method_whitelist=["GET"])
+
     adapter = HTTPAdapter(max_retries=retry)
-    s.mount("https://", adapter)
     s.mount("http://", adapter)
+    s.mount("https://", adapter)
+
+    s.headers.update({
+        "User-Agent": user_agent or "WikECD/0.1 (+contact: you@example.com)"
+    })
     return s
 
 
