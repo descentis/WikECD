@@ -7,6 +7,12 @@ from .partitioner import optimal_partition_indices
 from WikECD.logger import get_logger
 import logging
 
+from .metrics import (
+    space_cost_from_partitions,
+    time_cost_from_partitions,
+    orig_size_from_sizes,
+)
+
 logger = get_logger("WikECD.compressor", level=logging.DEBUG)
 
 
@@ -153,4 +159,39 @@ def compress_article(title: str, revisions: Iterable[Revision], time_budget: Opt
         logger.warning("Could not populate article.base_texts (non-fatal): %s", e)
     # --- end population block --
 
+    # after partitions/anchors computed and article/meta created:
+    orig_size = sum(len(r.text) for r in revisions)
+    article.meta.setdefault("orig_size", orig_size)
+    article.meta.setdefault("solver", solver)
+    article.meta.setdefault("strategy", strategy)
+    article.meta.setdefault("time_budget", time_budget)
+
+    # --- end population block --
+
+    # === Metrics & knobs ===
+    # We already have: texts, sizes, partitions, solver/strategy/time_budget
+    parts = partitions  # just an alias
+
+    # Primary metrics
+    space_cost = space_cost_from_partitions(sizes, parts)
+    time_cost = time_cost_from_partitions(sizes, parts)
+    orig_size = orig_size_from_sizes(sizes)
+
+    # Persist for analytics
+    article.meta["orig_size"] = orig_size
+    article.meta["space_cost"] = space_cost
+    article.meta["time_cost"] = time_cost
+    article.meta["sizes"] = sizes
+    article.meta["solver"] = solver
+    article.meta["strategy"] = strategy
+    article.meta["time_budget"] = time_budget
+    article.meta["page_id"] = getattr(revs[0], "page_id", None)
+
+    # Optional: exact chain lengths (better histogram)
+    try:
+        article.meta["chain_lengths"] = [len(p) for p in parts]
+    except Exception:
+        pass
+
     return article
+
