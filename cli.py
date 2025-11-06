@@ -64,15 +64,23 @@ def main():
     ap_fromdump.add_argument("--limit-revs", type=int, default=None, help="Optional cap for testing")
 
     # compress-from-dump-dir (local dump directory index + sweep)
+    # ---------------------------------------------------------------------
     ap_fromdumpdir = subparsers.add_parser("compress-from-dump-dir", help="Compress pages from a local dump directory")
-    ap_fromdumpdir.add_argument("--dump-dir", required=True)
+    ap_fromdumpdir.add_argument("--dump-dir", required=True, help="Local directory containing .bz2 history files")
     ap_fromdumpdir.add_argument("--page-ids", required=True, help="Comma-separated page ids")
-    ap_fromdumpdir.add_argument("--out-dir", required=True)
-    ap_fromdumpdir.add_argument("--index", required=False, help="Optional path to write/read index.json")
-    ap_fromdumpdir.add_argument("--solver", default="heuristic")
-    ap_fromdumpdir.add_argument("--strategy", default="fptas")
+    ap_fromdumpdir.add_argument("--out-dir", required=True, help="Output directory for compressed artifacts")
+    ap_fromdumpdir.add_argument("--index", required=False, help="Optional path to write/read dump index JSON")
+    ap_fromdumpdir.add_argument("--solver", default="heuristic", choices=["heuristic", "exact"])
+    ap_fromdumpdir.add_argument("--strategy", default="fptas", choices=["auto", "greedy", "fptas", "sparse"])
     ap_fromdumpdir.add_argument("--eps", type=float, default=0.1)
-    ap_fromdumpdir.add_argument("--max-pages-scan", type=int, default=None)
+    ap_fromdumpdir.add_argument("--max-pages-scan", type=int, default=None, help="Optional limit for XML scan pages")
+
+    # 🚀 NEW PERFORMANCE FLAGS
+    ap_fromdumpdir.add_argument("--jobs", type=int, default=1, help="Parallel worker count (default: 1)")
+    ap_fromdumpdir.add_argument("--resume", action="store_true", help="Skip already-compressed pages if present")
+    ap_fromdumpdir.add_argument("--force", action="store_true", help="Force recompress even if output exists")
+    ap_fromdumpdir.add_argument("--auto-index", action="store_true", help="Auto-build .pageidx.sqlite for faster seeks")
+    ap_fromdumpdir.add_argument("--verbose", action="store_true", help="Verbose logging")
 
     # compress-xml (single local XML file)
     ap_xml = subparsers.add_parser("compress-xml", help="Compress from XML dump")
@@ -135,6 +143,13 @@ def main():
 
     # compress-from-history-file (add flag)
     ap_hist.add_argument("--use-index", default=None, help="Optional SQLite index path built by build-bz2-index")
+
+    # analyze-comp
+    ap_an = subparsers.add_parser("analyze-comp", help="Analyze compressed artifacts and plot trade-offs")
+    ap_an.add_argument("--in-dir", required=True, help="Directory containing .comp.gz artifacts")
+    ap_an.add_argument("--out-csv", required=True, help="Path to write CSV summary")
+    ap_an.add_argument("--plots-dir", default=None, help="Directory to save PNG charts (optional)")
+    ap_an.add_argument("--show", action="store_true", help="Show plots interactively")
 
     args = ap.parse_args()
 
@@ -271,22 +286,27 @@ def main():
         print(f"[WikECD] Manifest written: {manifest_csv}")
 
     elif args.cmd == "compress-from-dump-dir":
-        # parse comma-separated page ids
-        pids = [int(x.strip()) for x in args.page_ids.split(",") if x.strip()]
-        ua = DEFAULT_USER_AGENT
+        from .cli_helpers.dump_sweeper import extract_from_dump_dir
+        page_ids = [int(x.strip()) for x in args.page_ids.split(",") if x.strip().isdigit()]
+        if not page_ids:
+            raise SystemExit("No valid numeric page IDs provided.")
         extract_from_dump_dir(
             dump_dir=args.dump_dir,
-            page_ids=pids,
+            page_ids=page_ids,
             out_dir=args.out_dir,
             index_path=args.index,
-            pattern="enwiki-*-pages-meta-history*.xml.*",
             solver=args.solver,
             strategy=args.strategy,
             eps=args.eps,
-            assume_sorted=True,
             max_pages_scan=args.max_pages_scan,
-            verbose=True
+            verbose=args.verbose,
+            jobs=args.jobs,
+            resume=args.resume,
+            force=args.force,
+            auto_index=args.auto_index,
         )
+
+        print(f"[WikECD] Completed dump-dir compression for {len(page_ids)} page(s).")
 
     elif args.cmd == "debug-resolve":
         ua = _ensure_user_agent(args.user_agent)
@@ -382,6 +402,24 @@ def main():
         from WikECD.sources.bz2_page_index import build_page_index
         n = build_page_index(args.file, args.index)
         print(f"[OK] Indexed {n} pages -> {args.index}")
+
+    elif args.cmd == "analyze-comp":
+        from WikECD.analytics.analyze import analyze_dir
+        res = analyze_dir(args.in_dir, args.out_csv, plots_dir=args.plots_dir, show=args.show)
+        print(f"[WikECD] Wrote CSV: {args.out_csv}")
+        if args.plots_dir:
+            for p in res["plots"]:
+                print(f"[WikECD] Plot: {p}")
+        agg = res.get("aggregate", {})
+        if agg:
+            print("[WikECD] Summary:",
+                  f"artifacts={agg.get('artifacts')},",
+                  f"avg_ratio={agg.get('avg_compression_ratio')},",
+                  f"median_ratio={agg.get('median_compression_ratio')},",
+                  f"avg_anchor_density={agg.get('avg_anchor_density')},",
+                  f"avg_time_cost={agg.get('avg_time_cost')},",
+                  f"avg_space_cost={agg.get('avg_space_cost')}")
+
 
     else:
         ap.print_help()
