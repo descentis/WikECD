@@ -1,5 +1,12 @@
 # 🧠 WikECD: Wikipedia Efficient Compression & Decompression
 
+[![PyPI](https://img.shields.io/pypi/v/wikecd.svg?color=blue&logo=pypi)](https://pypi.org/project/wikecd/)
+[![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg?logo=python)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Build Status](https://github.com/<yourusername>/WikECD/actions/workflows/tests.yml/badge.svg)](https://github.com/<yourusername>/WikECD/actions)
+[![Downloads](https://static.pepy.tech/personalized-badge/wikecd?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/wikecd)
+
+
 **WikECD** is a Python library and command-line toolkit for **efficiently compressing and retrieving Wikipedia revision histories**.  
 It implements a **knapsack-optimized partitioning algorithm** to balance **storage space** and **retrieval time**, enabling fast access to any revision without fully decompressing the entire article.
 
