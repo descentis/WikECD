@@ -155,6 +155,8 @@ def main():
 
     # dispatch
     if args.cmd == "compress-api":
+        from .compression.compressor import compress_article
+        from .storage.serializer import save
         ua = _ensure_user_agent(args.user_agent)
         src = MediaWikiAPISource(user_agent=ua, verbose=args.verbose)
         revs = list(src.get_revisions(title=args.title, limit=args.limit))

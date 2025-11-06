@@ -9,3 +9,5 @@ from .sources.api_client import MediaWikiAPISource
 from .compression.compressor import compress_article
 from .storage.compressed_store import CompressedArticle
 from .retrieval.retrieval import retrieve_range
+
+__version__ = "0.1.0"

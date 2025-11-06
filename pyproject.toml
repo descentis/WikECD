@@ -1,35 +1,46 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "WikECD"
+name = "wikecd"
 version = "0.1.0"
-description = "Wikipedia Efficient Compression & Decompression"
+description = "Wikipedia Efficient Compression & Decompression: optimal revision partitioning, fast retrieval, and analytics."
 readme = "README.md"
 requires-python = ">=3.9"
-license = {text = "MIT"}
+license = { text = "MIT" }
 authors = [{ name = "Amit Arjun Verma" }]
+keywords = ["wikipedia", "compression", "delta", "knapsack", "bzip2", "revision history"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: System :: Archiving :: Compression",
+]
 
-# ---- Make sure this array is properly closed with ] ----
 dependencies = [
-  "requests>=2.31",
-  "tqdm>=4.66"
+  "requests>=2.28",
+  "urllib3>=1.26,<3.0",
+  "lxml>=4.9",
+  "indexed_bzip2>=1.4",
+  "tqdm>=4.66",
+  "python-dateutil>=2.8.2",
+  "diff-match-patch>=20200713",
+  "matplotlib>=3.8",
+  "numpy>=1.24",
 ]
 
-[project.optional-dependencies]
-dev = [
-  "pytest>=8.0",
-  "pytest-mock",
-  "mypy"
-]
+[project.urls]
+Homepage = "https://github.com/youruser/WikECD"
+Issues = "https://github.com/youruser/WikECD/issues"
 
 [project.scripts]
 wikecd = "WikECD.cli:main"
 
 [tool.setuptools]
+packages = ["WikECD"]
 include-package-data = true
 
-[tool.setuptools.packages.find]
-include = ["WikECD*"]
-exclude = ["tests*", "examples*"]
+[tool.setuptools.package-dir]
+WikECD = "."
