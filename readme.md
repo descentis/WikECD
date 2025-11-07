@@ -1,4 +1,4 @@
-# 🧠 WikECD: Wikipedia Efficient Compression & Decompression
+# WikECD: Wikipedia Efficient Compression & Decompression
 
 [![PyPI](https://img.shields.io/pypi/v/wikecd.svg?color=blue&logo=pypi)](https://pypi.org/project/wikecd/)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg?logo=python)](https://www.python.org/)
@@ -12,7 +12,7 @@ It implements a **knapsack-optimized partitioning algorithm** to balance **stora
 
 ---
 
-## 🌍 Overview
+## Overview
 
 Wikipedia articles have thousands of revisions — each slightly different from the previous one.  
 Naïvely storing all versions wastes storage, while delta-compression makes retrieval slow.  
@@ -20,7 +20,7 @@ Naïvely storing all versions wastes storage, while delta-compression makes retr
 
 ---
 
-## ⚙️ Core Idea
+## Core Idea
 
 Given a sequence of article revisions:
 
@@ -51,7 +51,7 @@ This reduces to a **0/1 Knapsack problem**, where:
 
 ---
 
-## 🧮 Algorithm Summary
+## Algorithm Summary
 
 | Step | Description |
 |------|--------------|
@@ -68,16 +68,16 @@ This reduces to a **0/1 Knapsack problem**, where:
 
 | Category | Feature |
 |-----------|----------|
-| 🗂️ **Data Sources** | - Wikipedia API (with continuation & polite User-Agent)<br>- Wikipedia XML dump parser |
-| 📦 **Compression** | - Knapsack-based optimal partitioning<br>- Linear diff approximation<br>- Metadata (IDs, timestamps, partitions) |
-| 💾 **Storage** | - JSON+gzip compressed format<br>- Supports serialization/deserialization |
-| 🔍 **Retrieval** | - Retrieve by index range<br>- Retrieve by revision ID<br>- Retrieve by timestamp range |
-| ⚙️ **CLI Tool** | - `wikecd compress-api`<br>- `wikecd compress-xml`<br>- `wikecd retrieve`<br>- `wikecd retrieve-by-id`<br>- `wikecd retrieve-by-time` |
-| 🧠 **Extensibility** | - Pluggable diffing algorithms<br>- SQLite backend (planned)<br>- FastAPI microservice (planned) |
+| **Data Sources** | - Wikipedia API (with continuation & polite User-Agent)<br>- Wikipedia XML dump parser |
+| **Compression** | - Knapsack-based optimal partitioning<br>- Linear diff approximation<br>- Metadata (IDs, timestamps, partitions) |
+| **Storage** | - JSON+gzip compressed format<br>- Supports serialization/deserialization |
+| **Retrieval** | - Retrieve by index range<br>- Retrieve by revision ID<br>- Retrieve by timestamp range |
+| **CLI Tool** | - `wikecd compress-api`<br>- `wikecd compress-xml`<br>- `wikecd retrieve`<br>- `wikecd retrieve-by-id`<br>- `wikecd retrieve-by-time` |
+| **Extensibility** | - Pluggable diffing algorithms<br>- SQLite backend (planned)<br>- FastAPI microservice (planned) |
 
 ---
 
-## 🧱 Architecture
+## Architecture
 
 WikECD/\
 ├── sources/\
@@ -103,7 +103,7 @@ WikECD/\
 ├── examples/            # Usage demos\
 └── tests/               # Unit tests\
 
-## 🚀 Installation
+## Installation
 
 ```bash
 # Clone the repository
