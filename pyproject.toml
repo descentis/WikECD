@@ -4,20 +4,25 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wikecd"
-version = "0.1.0"
-description = "Wikipedia Efficient Compression & Decompression: optimal revision partitioning, fast retrieval, and analytics."
+version = "0.1.1"
+description = "Wikipedia Efficient Compression & Decompression (WikECD): optimal revision partitioning, fast retrieval, and analytics."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
-authors = [{ name = "Amit Arjun Verma" }]
+license = "MIT"
+authors = [{ name = "Amit Verma" }]
 keywords = ["wikipedia", "compression", "delta", "knapsack", "bzip2", "revision history"]
 classifiers = [
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3 :: Only",
-  "License :: OSI Approved :: MIT License",
-  "Operating System :: OS Independent",
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
   "Topic :: System :: Archiving :: Compression",
+  "Topic :: Text Processing :: Markup :: XML",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Operating System :: OS Independent",
 ]
+
 
 dependencies = [
   "requests>=2.28",
@@ -33,14 +38,30 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/youruser/WikECD"
-Issues = "https://github.com/youruser/WikECD/issues"
+Issues   = "https://github.com/youruser/WikECD/issues"
 
 [project.scripts]
 wikecd = "WikECD.cli:main"
 
+# ---- SINGLE setuptools block (do not duplicate below) ----
 [tool.setuptools]
-packages = ["WikECD"]
 include-package-data = true
+packages = [
+  "WikECD",
+  "WikECD.sources",
+  "WikECD.compression",
+  "WikECD.retrieval",
+  "WikECD.storage",
+  "WikECD.cli_helpers",
+  "WikECD.analytics",
+]
 
 [tool.setuptools.package-dir]
-WikECD = "."
+"WikECD" = "."
+"WikECD.sources" = "sources"
+"WikECD.compression" = "compression"
+"WikECD.retrieval" = "retrieval"
+"WikECD.storage" = "storage"
+"WikECD.cli_helpers" = "cli_helpers"
+"WikECD.analytics" = "analytics"
+
