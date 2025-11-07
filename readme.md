@@ -4,7 +4,7 @@
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg?logo=python)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Build](https://github.com/descentis/WikECD/actions/workflows/release.yml/badge.svg)](https://github.com/descentis/WikECD/actions/workflows/release.yml)
-[![Downloads](https://static.pepy.tech/personalized-badge/wikecd?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/wikecd)
+[![Downloads](https://img.shields.io/pypi/dm/wikecd.svg)](https://pypi.org/project/wikecd/)
 
 
 **WikECD** is a Python library and command-line toolkit for **efficiently compressing and retrieving Wikipedia revision histories**.  
