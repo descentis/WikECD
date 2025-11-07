@@ -63,6 +63,6 @@ tag:
 	git add .
 	git commit -m "🔖 Release v$(v)"
 	git tag -a "v$(v)" -m "Version $(v)"
-	git push origin main --tags
+	git push --tags
 	@echo "Tagged and pushed version $(v)"
 
