@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/wikecd.svg?color=blue&logo=pypi)](https://pypi.org/project/wikecd/)
 [![Python](https://img.shields.io/badge/python-3.9%2B-blue.svg?logo=python)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Build Status](https://github.com/<yourusername>/WikECD/actions/workflows/tests.yml/badge.svg)](https://github.com/<yourusername>/WikECD/actions)
+[![Build](https://github.com/descentis/WikECD/actions/workflows/release.yml/badge.svg)](https://github.com/descentis/WikECD/actions/workflows/release.yml)
 [![Downloads](https://static.pepy.tech/personalized-badge/wikecd?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/wikecd)
 
 
