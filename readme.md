@@ -235,3 +235,18 @@ Each compressed article includes:
   }
 }
 ```
+## Collaboration and Open Research Invitation
+WikECD is more than a tool — it’s a research platform for exploring the intersection of algorithmic compression, temporal data management, and AI-based retrieval systems.
+We invite researchers, students, and developers to collaborate, extend, and benchmark their own algorithms within this unified framework.
+
+We are actively looking for contributions in the following directions:
+
+**Algorithmic Innovation:** Explore new heuristics, FPTAS improvements, or hybrid knapsack solvers to optimize time–space trade-offs.
+
+**Semantic and Neural Compression:** Integrate embedding-aware diffs or neural edit representations to capture semantic change rather than surface tokens.
+
+**Scalable Storage Architectures:** Extend the serializer to support distributed backends (S3, HuggingFace Datasets, or academic data repositories).
+
+**Benchmarking and Evaluation:** Contribute datasets, evaluation scripts, and plots comparing WikECD with other diff-based compressors (e.g., zstd, bsdiff, VCDIFF).
+
+**Education and Documentation:** Help us develop teaching notebooks, tutorials, and reproducible pipelines for data-science and information-retrieval courses.
